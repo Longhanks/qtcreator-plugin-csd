@@ -1,0 +1,16 @@
+{
+    "Name" : "csd",
+    "Version" : "${csd_VERSION_MAJOR}.${csd_VERSION_MINOR}.${csd_VERSION_PATCH}",
+    "CompatVersion" : "${csd_VERSION_MAJOR}.${csd_VERSION_MINOR}.${csd_VERSION_PATCH}",
+    "Vendor" : "Andreas Schulz",
+    "Copyright" : "(C) 2019 Andreas Schulz",
+    "License" : "MIT",
+    "Category" : "Qt Creator",
+    "Description" : "Client-side decorated unified title-/toolbar for Qt Creator. ",
+    "Url" : "https://github.com/Longhanks/qtcreator-plugin-csd",
+    "Dependencies" : [
+        { "Name" : "Core", "Version" : "${QTCREATOR_VERSION}" },
+        { "Name" : "ProjectExplorer", "Version" : "${QTCREATOR_VERSION}" },
+        { "Name" : "TextEditor", "Version" : "${QTCREATOR_VERSION}" }
+    ]
+}
