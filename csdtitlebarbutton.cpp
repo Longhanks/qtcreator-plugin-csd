@@ -42,36 +42,74 @@ void TitleBarButton::paintEvent([[maybe_unused]] QPaintEvent *event) {
     styleOptionButton.text = this->text();
     styleOptionButton.icon = this->icon();
     styleOptionButton.iconSize = this->iconSize();
-    if (this->m_active) {
-        styleOptionButton.palette.setColor(QPalette::ButtonText, Qt::white);
-    } else {
-        styleOptionButton.palette.setColor(QPalette::ButtonText, Qt::gray);
+
+    QBrush buttonBrush = styleOptionButton.palette.brush(QPalette::Button);
+    const auto hoverColor = QColor(171, 178, 191, 75);
+    const bool isHovered = styleOptionButton.state & QStyle::State_MouseOver;
+    const bool isActive = this->m_active;
+
+    switch (this->m_role) {
+    case Role::CaptionIcon: {
+        break;
+    }
+    case Role::MenuBarItem: {
+        if (isActive) {
+            styleOptionButton.palette.setColor(QPalette::ButtonText, QColor(171, 178, 191));
+        } else {
+            styleOptionButton.palette.setColor(QPalette::ButtonText, Qt::darkGray);
+        }
+        if (isHovered) {
+            buttonBrush.setColor(hoverColor);
+            qDrawShadePanel(&stylePainter,
+                            styleOptionButton.rect,
+                            styleOptionButton.palette,
+                            false,
+                            0,
+                            &buttonBrush);
+        }
+        break;
+    }
+    case Role::Minimize: {
+        [[fallthrough]];
+    }
+    case Role::MaximizeRestore: {
+        if (isActive) {
+            styleOptionButton.palette.setColor(QPalette::ButtonText, Qt::white);
+        } else {
+            styleOptionButton.palette.setColor(QPalette::ButtonText, Qt::darkGray);
+        }
+        if (isHovered) {
+            styleOptionButton.palette.setColor(QPalette::ButtonText, Qt::white);
+            buttonBrush.setColor(hoverColor);
+            qDrawShadePanel(&stylePainter,
+                            styleOptionButton.rect,
+                            styleOptionButton.palette,
+                            false,
+                            0,
+                            &buttonBrush);
+        }
+        break;
+    }
+    case Role::Close: {
+        if (isActive) {
+            styleOptionButton.palette.setColor(QPalette::ButtonText, Qt::white);
+        } else {
+            styleOptionButton.palette.setColor(QPalette::ButtonText, Qt::darkGray);
+        }
+        if (isHovered) {
+            styleOptionButton.palette.setColor(QPalette::ButtonText, Qt::white);
+            buttonBrush.setColor(Qt::red);
+            qDrawShadePanel(&stylePainter,
+                            styleOptionButton.rect,
+                            styleOptionButton.palette,
+                            false,
+                            0,
+                            &buttonBrush);
+        }
+        break;
+    }
     }
 
-    bool hovered = styleOptionButton.state & QStyle::State_MouseOver;
-    if (hovered && !(this->m_role == Role::CaptionIcon)) {
-        QBrush brush = styleOptionButton.palette.brush(QPalette::Button);
-        if (this->m_role == Role::Close) {
-            brush.setColor(Qt::red);
-            if (!this->m_active) {
-                styleOptionButton.palette.setColor(QPalette::ButtonText,
-                                                   Qt::white);
-            }
-        } else if (this->isActive()) {
-            QColor brushColor = Qt::lightGray;
-            brushColor.setAlpha(50);
-            brush.setColor(brushColor);
-        } else {
-            styleOptionButton.palette.setColor(QPalette::ButtonText,
-                                               Qt::white);
-        }
-        qDrawShadePanel(&stylePainter,
-                        styleOptionButton.rect,
-                        styleOptionButton.palette,
-                        false,
-                        0,
-                        &brush);
-    }
     stylePainter.drawControl(QStyle::CE_PushButtonLabel, styleOptionButton);
 }
 

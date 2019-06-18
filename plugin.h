@@ -14,6 +14,7 @@
 namespace CSD {
 
 class TitleBar;
+class TitleBarButton;
 
 namespace Internal {
 
@@ -34,6 +35,14 @@ private:
 #else
     LinuxClientSideDecorationFilter *m_filter;
     TitleBar *m_titleBar;
+    TitleBarButton *m_buttonMenuFile;
+    TitleBarButton *m_buttonMenuEdit;
+    TitleBarButton *m_buttonMenuBuild;
+    TitleBarButton *m_buttonMenuDebug;
+    TitleBarButton *m_buttonMenuAnalyze;
+    TitleBarButton *m_buttonMenuTools;
+    TitleBarButton *m_buttonMenuWindow;
+    TitleBarButton *m_buttonMenuHelp;
 #endif
 };
 

@@ -19,10 +19,6 @@ LinuxClientSideDecorationFilter::~LinuxClientSideDecorationFilter() = default;
 bool LinuxClientSideDecorationFilter::eventFilter(QObject *watched,
                                                   QEvent *event) {
     QWidget *widget = static_cast<QWidget *>(watched);
-    if (widget == nullptr) {
-        return false;
-    }
-
     auto resultIterator = this->m_callbacks.find(widget);
 
     if (event->type() == QEvent::ActivationChange) {
@@ -42,7 +38,7 @@ void LinuxClientSideDecorationFilter::apply(QWidget *widget,
         WidgetCallbacks(std::move(onActivationChanged),
                         std::move(onWindowStateChanged)));
     widget->installEventFilter(this);
-    widget->setWindowFlags(widget->windowFlags() |= Qt::FramelessWindowHint);
+    widget->setWindowFlag(Qt::FramelessWindowHint);
 }
 
 } // namespace CSD::Internal

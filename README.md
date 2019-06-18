@@ -1,6 +1,6 @@
-# qtcreator-plugin-onedark
+# qtcreator-plugin-csd
 
-OneDark style additions for [Qt Creator](http://qt-project.org/wiki/Category:Tools::QtCreator).
+Client-side decorated unified title-/toolbar for [Qt Creator](http://qt-project.org/wiki/Category:Tools::QtCreator).
 
 ## Copyright / License
 

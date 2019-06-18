@@ -10,7 +10,7 @@ class TitleBarButton : public QPushButton {
     Q_OBJECT
 
 public:
-    enum Role { CaptionIcon, Minimize, MaximizeRestore, Close };
+    enum Role { CaptionIcon, MenuBarItem, Minimize, MaximizeRestore, Close };
     Q_ENUM(Role)
 
     explicit TitleBarButton(Role role, TitleBar *parent = nullptr);
