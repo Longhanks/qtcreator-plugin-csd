@@ -162,7 +162,7 @@ else ()
 
     target_sources(csd PRIVATE win32csd.cpp)
 
-    find_package(Qt5WinExtras REQUIRED)
+#    find_package(Qt5WinExtras REQUIRED)
 
     target_compile_definitions(csd PUBLIC WIN32_LEAN_AND_MEAN)
     target_compile_definitions(csd PUBLIC NOMINMAX)
@@ -171,7 +171,7 @@ else ()
     find_library(DWMAPI "dwmapi")
     target_link_libraries(csd PRIVATE
         ${DWMAPI}
-        Qt5::WinExtras
+#        Qt5::WinExtras
     )
 endif ()
 

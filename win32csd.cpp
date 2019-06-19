@@ -10,12 +10,13 @@
 namespace CSD::Internal {
 
 Win32ClientSideDecorationFilter::HWNDData::HWNDData(
-    QWidget *ptr,
-    std::function<bool()> isCaptionCallback,
-    std::function<void()> activationOrWindowStateChange)
-    : m_ptr(ptr), m_isCaptionCallback(std::move(isCaptionCallback)),
-      m_activationOrWindowStateChange(
-          std::move(activationOrWindowStateChange)) {}
+    QWidget *widget,
+    std::function<bool()> isCaptionHovered,
+    std::function<void()> onActivationChanged,
+    std::function<void()> onWindowStateChanged)
+    : widget(widget), isCaptionHovered(std::move(isCaptionHovered)),
+      onActivationChanged(std::move(onActivationChanged)),
+      onWindowStateChanged(std::move(onWindowStateChanged)) {}
 
 Win32ClientSideDecorationFilter::Win32ClientSideDecorationFilter(
     QObject *parent)
@@ -23,35 +24,21 @@ Win32ClientSideDecorationFilter::Win32ClientSideDecorationFilter(
 
 Win32ClientSideDecorationFilter::~Win32ClientSideDecorationFilter() = default;
 
-void Win32ClientSideDecorationFilter::makeWidgetCSD(
-    QWidget *w,
-    std::function<bool()> isCaptionCallback,
-    std::function<void()> activationOrWindowStateChange) {
-    this->csdHWNDs.emplace(reinterpret_cast<HWND>(w->winId()),
-                           HWNDData(w,
-                                    std::move(isCaptionCallback),
-                                    std::move(activationOrWindowStateChange)));
-    w->installEventFilter(this);
-}
-
 bool Win32ClientSideDecorationFilter::eventFilter(QObject *watched,
                                                   QEvent *event) {
-    QWidget *widget = qobject_cast<QWidget *>(watched);
-    if (widget == nullptr) {
-        return false;
-    }
+    QWidget *widget = static_cast<QWidget *>(watched);
+    auto resultIterator =
+        std::find_if(std::begin(this->appliedHWNDs),
+                     std::end(this->appliedHWNDs),
+                     [watched](const auto &hwndDataPair) {
+                         return hwndDataPair.second.widget == watched;
+                     });
 
-    if (event->type() == QEvent::ActivationChange ||
-        event->type() == QEvent::WindowStateChange) {
-        auto resultIterator =
-            std::find_if(std::begin(this->csdHWNDs),
-                         std::end(this->csdHWNDs),
-                         [watched](const auto &pair) {
-                             return pair.second.m_ptr == watched;
-                         });
-        if (resultIterator != std::end(this->csdHWNDs)) {
-            resultIterator->second.m_activationOrWindowStateChange();
-        }
+    if (event->type() == QEvent::ActivationChange) {
+        resultIterator->second.onActivationChanged();
+        return false;
+    } else if (event->type() == QEvent::WindowStateChange) {
+        resultIterator->second.onWindowStateChanged();
         return false;
     }
 
@@ -96,8 +83,8 @@ bool Win32ClientSideDecorationFilter::nativeEventFilter(
     if (msg->hwnd == nullptr) {
         return false;
     }
-    auto resultIterator = this->csdHWNDs.find(msg->hwnd);
-    if (resultIterator == std::end(this->csdHWNDs)) {
+    auto resultIterator = this->appliedHWNDs.find(msg->hwnd);
+    if (resultIterator == std::end(this->appliedHWNDs)) {
         return false;
     }
     if (msg->message == WM_CREATE) {
@@ -158,10 +145,10 @@ bool Win32ClientSideDecorationFilter::nativeEventFilter(
         auto x = GET_X_LPARAM(msg->lParam);
         auto y = GET_Y_LPARAM(msg->lParam);
 
-        auto resizeWidth = resultIterator->second.m_ptr->minimumWidth() !=
-                           resultIterator->second.m_ptr->maximumWidth();
-        auto resizeHeight = resultIterator->second.m_ptr->minimumHeight() !=
-                            resultIterator->second.m_ptr->maximumHeight();
+        auto resizeWidth = resultIterator->second.widget->minimumWidth() !=
+                           resultIterator->second.widget->maximumWidth();
+        auto resizeHeight = resultIterator->second.widget->minimumHeight() !=
+                            resultIterator->second.widget->maximumHeight();
 
         if (resizeWidth) {
             if (x >= clientRect.left && x < clientRect.left + borderWidth) {
@@ -205,7 +192,7 @@ bool Win32ClientSideDecorationFilter::nativeEventFilter(
             return true;
         }
 
-        if (resultIterator->second.m_isCaptionCallback()) {
+        if (resultIterator->second.isCaptionHovered()) {
             *result = HTCAPTION;
             return true;
         }
@@ -277,6 +264,19 @@ bool Win32ClientSideDecorationFilter::nativeEventFilter(
         }
     }
     return false;
+}
+
+void Win32ClientSideDecorationFilter::apply(
+    QWidget *widget,
+    std::function<bool()> isCaptionHovered,
+    std::function<void()> onActivationChanged,
+    std::function<void()> onWindowStateChanged) {
+    this->appliedHWNDs.emplace(reinterpret_cast<HWND>(widget->winId()),
+                               HWNDData(widget,
+                                        std::move(isCaptionHovered),
+                                        std::move(onActivationChanged),
+                                        std::move(onWindowStateChanged)));
+    widget->installEventFilter(this);
 }
 
 } // namespace CSD::Internal

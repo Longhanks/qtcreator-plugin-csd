@@ -22,28 +22,28 @@ class Win32ClientSideDecorationFilter : public QObject,
                                         public QAbstractNativeEventFilter {
 private:
     struct HWNDData {
-        QWidget *m_ptr;
-        std::function<bool()> m_isCaptionCallback;
-        std::function<void()> m_activationOrWindowStateChange;
-        HWNDData(QWidget *ptr,
-                 std::function<bool()> isCaptionCallback,
-                 std::function<void()> activationOrWindowStateChange);
+        QWidget *widget;
+        std::function<bool()> isCaptionHovered;
+        std::function<void()> onActivationChanged;
+        std::function<void()> onWindowStateChanged;
+        HWNDData(QWidget *widget,
+                 std::function<bool()> isCaptionHovered,
+                 std::function<void()> onActivationChanged,
+                 std::function<void()> onWindowStateChanged);
     };
-
-    std::unordered_map<HWND, HWNDData> csdHWNDs;
+    std::unordered_map<HWND, HWNDData> appliedHWNDs;
 
 public:
     explicit Win32ClientSideDecorationFilter(QObject *parent = nullptr);
     ~Win32ClientSideDecorationFilter() override;
 
-    void makeWidgetCSD(QWidget *w,
-                       std::function<bool()> isCaptionCallback,
-                       std::function<void()> activationOrWindowStateChange);
-
     bool eventFilter(QObject *watched, QEvent *event) override;
-
     bool nativeEventFilter(const QByteArray &eventType,
                            void *message,
                            long *result) override;
+    void apply(QWidget *widget,
+               std::function<bool()> isCaptionHovered,
+               std::function<void()> onActivationChanged,
+               std::function<void()> onWindowStateChanged);
 };
 } // namespace CSD::Internal

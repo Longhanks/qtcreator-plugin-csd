@@ -8,7 +8,6 @@
 class QHBoxLayout;
 class QLayout;
 class QLabel;
-class QRegistryWatcher;
 
 namespace CSD {
 
@@ -21,7 +20,6 @@ class TitleBar : public QWidget {
 
 private:
 #ifdef _WIN32
-    QRegistryWatcher *m_watcher = nullptr;
     std::optional<QColor> readDWMColorizationColor();
 #endif
     bool m_active = false;
@@ -30,6 +28,14 @@ private:
     QHBoxLayout *m_horizontalLayout;
     QWidget *m_leftMargin;
     TitleBarButton *m_buttonCaptionIcon;
+    TitleBarButton *m_buttonMenuFile;
+    TitleBarButton *m_buttonMenuEdit;
+    TitleBarButton *m_buttonMenuBuild;
+    TitleBarButton *m_buttonMenuDebug;
+    TitleBarButton *m_buttonMenuAnalyze;
+    TitleBarButton *m_buttonMenuTools;
+    TitleBarButton *m_buttonMenuWindow;
+    TitleBarButton *m_buttonMenuHelp;
     TitleBarButton *m_buttonMinimize;
     TitleBarButton *m_buttonMaximizeRestore;
     TitleBarButton *m_buttonClose;

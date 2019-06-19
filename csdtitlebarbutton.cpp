@@ -54,9 +54,11 @@ void TitleBarButton::paintEvent([[maybe_unused]] QPaintEvent *event) {
     }
     case Role::MenuBarItem: {
         if (isActive) {
-            styleOptionButton.palette.setColor(QPalette::ButtonText, QColor(171, 178, 191));
+            styleOptionButton.palette.setColor(QPalette::ButtonText,
+                                               QColor(171, 178, 191));
         } else {
-            styleOptionButton.palette.setColor(QPalette::ButtonText, Qt::darkGray);
+            styleOptionButton.palette.setColor(QPalette::ButtonText,
+                                               Qt::darkGray);
         }
         if (isHovered) {
             buttonBrush.setColor(hoverColor);
@@ -74,12 +76,15 @@ void TitleBarButton::paintEvent([[maybe_unused]] QPaintEvent *event) {
     }
     case Role::MaximizeRestore: {
         if (isActive) {
-            styleOptionButton.palette.setColor(QPalette::ButtonText, Qt::white);
+            styleOptionButton.palette.setColor(QPalette::ButtonText,
+                                               Qt::white);
         } else {
-            styleOptionButton.palette.setColor(QPalette::ButtonText, Qt::darkGray);
+            styleOptionButton.palette.setColor(QPalette::ButtonText,
+                                               Qt::darkGray);
         }
         if (isHovered) {
-            styleOptionButton.palette.setColor(QPalette::ButtonText, Qt::white);
+            styleOptionButton.palette.setColor(QPalette::ButtonText,
+                                               Qt::white);
             buttonBrush.setColor(hoverColor);
             qDrawShadePanel(&stylePainter,
                             styleOptionButton.rect,
@@ -92,12 +97,15 @@ void TitleBarButton::paintEvent([[maybe_unused]] QPaintEvent *event) {
     }
     case Role::Close: {
         if (isActive) {
-            styleOptionButton.palette.setColor(QPalette::ButtonText, Qt::white);
+            styleOptionButton.palette.setColor(QPalette::ButtonText,
+                                               Qt::white);
         } else {
-            styleOptionButton.palette.setColor(QPalette::ButtonText, Qt::darkGray);
+            styleOptionButton.palette.setColor(QPalette::ButtonText,
+                                               Qt::darkGray);
         }
         if (isHovered) {
-            styleOptionButton.palette.setColor(QPalette::ButtonText, Qt::white);
+            styleOptionButton.palette.setColor(QPalette::ButtonText,
+                                               Qt::white);
             buttonBrush.setColor(Qt::red);
             qDrawShadePanel(&stylePainter,
                             styleOptionButton.rect,
