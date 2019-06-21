@@ -2,21 +2,18 @@
 
 #include "csdtitlebarbutton.h"
 
-#include <coreplugin/actionmanager/actioncontainer.h>
-#include <coreplugin/actionmanager/actionmanager.h>
 #include <coreplugin/coreicons.h>
-#include <projectexplorer/projectexplorerconstants.h>
+#include <coreplugin/icore.h>
 
 #ifdef _WIN32
 #include <Windows.h>
 #include <dwmapi.h>
 #endif
 
-#include <QApplication>
 #include <QBoxLayout>
-#include <QLabel>
+#include <QEvent>
+#include <QMenuBar>
 #include <QPainter>
-#include <QPushButton>
 #include <QStyleOption>
 
 #ifdef _WIN32
@@ -24,6 +21,71 @@
 #endif
 
 namespace CSD {
+
+CSDProxyStyle::CSDProxyStyle(QStyle *style) : QProxyStyle(style) {}
+
+void CSDProxyStyle::drawControl(ControlElement element,
+                                const QStyleOption *option,
+                                QPainter *painter,
+                                const QWidget *widget) const {
+    if (element == CE_MenuBarEmptyArea) {
+        return;
+    }
+
+    if (element == CE_MenuBarItem) {
+        if (const QStyleOptionMenuItem *mbi =
+                qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
+            uint alignment = Qt::AlignCenter | Qt::TextShowMnemonic |
+                             Qt::TextDontClip | Qt::TextSingleLine;
+            if (!this->proxy()->styleHint(SH_UnderlineShortcut, mbi, widget)) {
+                alignment |= Qt::TextHideMnemonic;
+            }
+            int iconExtent = this->proxy()->pixelMetric(PM_SmallIconSize);
+            QPixmap pix = mbi->icon.pixmap(widget->window()->windowHandle(),
+                                           QSize(iconExtent, iconExtent),
+                                           (mbi->state & State_Enabled)
+                                               ? QIcon::Normal
+                                               : QIcon::Disabled);
+            if (!pix.isNull()) {
+                this->proxy()->drawItemPixmap(
+                    painter, mbi->rect, static_cast<int>(alignment), pix);
+            } else {
+                auto titleBar =
+                    static_cast<const TitleBar *>(widget->parentWidget());
+                if (mbi->state & State_Enabled && !titleBar->isActive()) {
+                    const_cast<QStyleOptionMenuItem *>(mbi)->palette.setColor(
+                        QPalette::ButtonText, Qt::darkGray);
+                }
+                this->proxy()->drawItemText(painter,
+                                            mbi->rect,
+                                            static_cast<int>(alignment),
+                                            mbi->palette,
+                                            mbi->state & State_Enabled,
+                                            mbi->text,
+                                            QPalette::ButtonText);
+                if (mbi->state & State_Selected) {
+                    const auto hoverColor = QColor(171, 178, 191, 75);
+                    painter->fillRect(mbi->rect, QBrush(hoverColor));
+                }
+            }
+            return;
+        }
+    }
+
+    return QProxyStyle::drawControl(element, option, painter, widget);
+}
+
+int CSDProxyStyle::pixelMetric(PixelMetric metric,
+                               const QStyleOption *option,
+                               const QWidget *widget) const {
+    if (metric == PM_MenuBarPanelWidth) {
+        return 0;
+    }
+    if (metric == PM_MenuBarVMargin) {
+        return 5;
+    }
+    return QProxyStyle::pixelMetric(metric, option, widget);
+}
 
 TitleBar::TitleBar(QWidget *parent) : QWidget(parent) {
     this->setObjectName("TitleBar");
@@ -65,137 +127,11 @@ TitleBar::TitleBar(QWidget *parent) : QWidget(parent) {
     this->m_buttonCaptionIcon->setIcon(Core::Icons::QTCREATORLOGO_BIG.icon());
     this->m_horizontalLayout->addWidget(this->m_buttonCaptionIcon);
 
-    // Menu: File
-    this->m_buttonMenuFile = new CSD::TitleBarButton(
-        "File", CSD::TitleBarButton::MenuBarItem, this);
-    this->m_buttonMenuFile->setFocusPolicy(Qt::NoFocus);
-    this->m_buttonMenuFile->setMinimumHeight(30);
-    this->m_buttonMenuFile->setMaximumHeight(30);
-    this->m_buttonMenuFile->setMaximumWidth(
-        this->m_buttonMenuFile->fontMetrics()
-            .size(Qt::TextShowMnemonic, this->m_buttonMenuFile->text())
-            .width() +
-        12);
-    this->m_buttonMenuFile->setSizePolicy(
-        this->m_buttonMenuFile->sizePolicy());
-    auto *filemenu =
-        Core::ActionManager::createMenu(Core::Constants::M_FILE)->menu();
-    this->m_buttonMenuFile->setMenu(filemenu);
-    this->m_horizontalLayout->addWidget(this->m_buttonMenuFile);
-
-    // Menu: Edit
-    this->m_buttonMenuEdit = new CSD::TitleBarButton(
-        "Edit", CSD::TitleBarButton::MenuBarItem, this);
-    this->m_buttonMenuEdit->setFocusPolicy(Qt::NoFocus);
-    this->m_buttonMenuEdit->setMinimumHeight(30);
-    this->m_buttonMenuEdit->setMaximumHeight(30);
-    this->m_buttonMenuEdit->setMaximumWidth(
-        this->m_buttonMenuEdit->fontMetrics()
-            .size(Qt::TextShowMnemonic, this->m_buttonMenuEdit->text())
-            .width() +
-        12);
-    auto *editmenu =
-        Core::ActionManager::createMenu(Core::Constants::M_EDIT)->menu();
-    this->m_buttonMenuEdit->setMenu(editmenu);
-    this->m_horizontalLayout->addWidget(this->m_buttonMenuEdit);
-
-    // Menu: Build
-    this->m_buttonMenuBuild = new CSD::TitleBarButton(
-        "Build", CSD::TitleBarButton::MenuBarItem, this);
-    this->m_buttonMenuBuild->setFocusPolicy(Qt::NoFocus);
-    this->m_buttonMenuBuild->setMinimumHeight(30);
-    this->m_buttonMenuBuild->setMaximumHeight(30);
-    this->m_buttonMenuBuild->setMaximumWidth(
-        this->m_buttonMenuBuild->fontMetrics()
-            .size(Qt::TextShowMnemonic, this->m_buttonMenuBuild->text())
-            .width() +
-        12);
-    auto *buildmenu = Core::ActionManager::createMenu(
-                          ProjectExplorer::Constants::M_BUILDPROJECT)
-                          ->menu();
-    this->m_buttonMenuBuild->setMenu(buildmenu);
-    this->m_horizontalLayout->addWidget(this->m_buttonMenuBuild);
-
-    // Menu: Debug
-    this->m_buttonMenuDebug = new CSD::TitleBarButton(
-        "Debug", CSD::TitleBarButton::MenuBarItem, this);
-    this->m_buttonMenuDebug->setFocusPolicy(Qt::NoFocus);
-    this->m_buttonMenuDebug->setMinimumHeight(30);
-    this->m_buttonMenuDebug->setMaximumHeight(30);
-    this->m_buttonMenuDebug->setMaximumWidth(
-        this->m_buttonMenuDebug->fontMetrics()
-            .size(Qt::TextShowMnemonic, this->m_buttonMenuDebug->text())
-            .width() +
-        12);
-    auto *debugmenu =
-        Core::ActionManager::createMenu(ProjectExplorer::Constants::M_DEBUG)
-            ->menu();
-    this->m_buttonMenuDebug->setMenu(debugmenu);
-    this->m_horizontalLayout->addWidget(this->m_buttonMenuDebug);
-
-    // Menu: Analyze
-    this->m_buttonMenuAnalyze = new CSD::TitleBarButton(
-        "Analyze", CSD::TitleBarButton::MenuBarItem, this);
-    this->m_buttonMenuAnalyze->setFocusPolicy(Qt::NoFocus);
-    this->m_buttonMenuAnalyze->setMinimumHeight(30);
-    this->m_buttonMenuAnalyze->setMaximumHeight(30);
-    this->m_buttonMenuAnalyze->setMaximumWidth(
-        this->m_buttonMenuAnalyze->fontMetrics()
-            .size(Qt::TextShowMnemonic, this->m_buttonMenuAnalyze->text())
-            .width() +
-        12);
-    //    auto *filemenu =
-    //        Core::ActionManager::createMenu(Core::Constants::M_FILE)->menu();
-    //    this->m_buttonMenuAnalyze->setMenu(filemenu);
-    this->m_horizontalLayout->addWidget(this->m_buttonMenuAnalyze);
-
-    // Menu: Tools
-    this->m_buttonMenuTools = new CSD::TitleBarButton(
-        "Tools", CSD::TitleBarButton::MenuBarItem, this);
-    this->m_buttonMenuTools->setFocusPolicy(Qt::NoFocus);
-    this->m_buttonMenuTools->setMinimumHeight(30);
-    this->m_buttonMenuTools->setMaximumHeight(30);
-    this->m_buttonMenuTools->setMaximumWidth(
-        this->m_buttonMenuTools->fontMetrics()
-            .size(Qt::TextShowMnemonic, this->m_buttonMenuTools->text())
-            .width() +
-        12);
-    auto *toolsmenu =
-        Core::ActionManager::createMenu(Core::Constants::M_TOOLS)->menu();
-    this->m_buttonMenuTools->setMenu(toolsmenu);
-    this->m_horizontalLayout->addWidget(this->m_buttonMenuTools);
-
-    // Menu: Window
-    this->m_buttonMenuWindow = new CSD::TitleBarButton(
-        "Window", CSD::TitleBarButton::MenuBarItem, this);
-    this->m_buttonMenuWindow->setFocusPolicy(Qt::NoFocus);
-    this->m_buttonMenuWindow->setMinimumHeight(30);
-    this->m_buttonMenuWindow->setMaximumHeight(30);
-    this->m_buttonMenuWindow->setMaximumWidth(
-        this->m_buttonMenuWindow->fontMetrics()
-            .size(Qt::TextShowMnemonic, this->m_buttonMenuWindow->text())
-            .width() +
-        12);
-    auto *windowmenu =
-        Core::ActionManager::createMenu(Core::Constants::M_WINDOW)->menu();
-    this->m_buttonMenuWindow->setMenu(windowmenu);
-    this->m_horizontalLayout->addWidget(this->m_buttonMenuWindow);
-
-    // Menu: Help
-    this->m_buttonMenuHelp = new CSD::TitleBarButton(
-        "Help", CSD::TitleBarButton::MenuBarItem, this);
-    this->m_buttonMenuHelp->setFocusPolicy(Qt::NoFocus);
-    this->m_buttonMenuHelp->setMinimumHeight(30);
-    this->m_buttonMenuHelp->setMaximumHeight(30);
-    this->m_buttonMenuHelp->setMaximumWidth(
-        this->m_buttonMenuHelp->fontMetrics()
-            .size(Qt::TextShowMnemonic, this->m_buttonMenuHelp->text())
-            .width() +
-        12);
-    auto *helpmenu =
-        Core::ActionManager::createMenu(Core::Constants::M_HELP)->menu();
-    this->m_buttonMenuHelp->setMenu(helpmenu);
-    this->m_horizontalLayout->addWidget(this->m_buttonMenuHelp);
+    this->m_menuBar = Core::ICore::mainWindow()->menuBar();
+    this->m_horizontalLayout->addWidget(this->m_menuBar);
+    this->m_menuBar->setFixedHeight(30);
+    this->m_proxyStyle = new CSDProxyStyle(this->style());
+    this->m_menuBar->setStyle(this->m_proxyStyle);
 
     auto *emptySpace = new QWidget(this);
     this->m_horizontalLayout->addWidget(emptySpace, 1);
@@ -288,14 +224,6 @@ void TitleBar::setActive(bool active) {
         this->setPalette(palette);
 
         this->m_buttonCaptionIcon->setActive(true);
-        this->m_buttonMenuFile->setActive(true);
-        this->m_buttonMenuEdit->setActive(true);
-        this->m_buttonMenuBuild->setActive(true);
-        this->m_buttonMenuDebug->setActive(true);
-        this->m_buttonMenuAnalyze->setActive(true);
-        this->m_buttonMenuTools->setActive(true);
-        this->m_buttonMenuWindow->setActive(true);
-        this->m_buttonMenuHelp->setActive(true);
         this->m_buttonMinimize->setActive(true);
         this->m_buttonMaximizeRestore->setActive(true);
         this->m_buttonClose->setActive(true);
@@ -305,14 +233,6 @@ void TitleBar::setActive(bool active) {
         this->setPalette(palette);
 
         this->m_buttonCaptionIcon->setActive(false);
-        this->m_buttonMenuFile->setActive(false);
-        this->m_buttonMenuEdit->setActive(false);
-        this->m_buttonMenuBuild->setActive(false);
-        this->m_buttonMenuDebug->setActive(false);
-        this->m_buttonMenuAnalyze->setActive(false);
-        this->m_buttonMenuTools->setActive(false);
-        this->m_buttonMenuWindow->setActive(false);
-        this->m_buttonMenuHelp->setActive(false);
         this->m_buttonMinimize->setActive(false);
         this->m_buttonMaximizeRestore->setActive(false);
         this->m_buttonClose->setActive(false);
@@ -353,6 +273,11 @@ bool TitleBar::hovered() const {
     auto cursorPos = QCursor::pos();
     bool hovered = this->rect().contains(this->mapFromGlobal(cursorPos));
     if (!hovered) {
+        return false;
+    }
+
+    if (this->m_menuBar->rect().contains(
+            this->m_menuBar->mapFromGlobal(cursorPos))) {
         return false;
     }
 

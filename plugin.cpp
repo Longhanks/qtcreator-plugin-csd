@@ -25,8 +25,32 @@ CSDPlugin::CSDPlugin() {
 bool CSDPlugin::initialize([[maybe_unused]] const QStringList &arguments,
                            [[maybe_unused]] QString *errorString) {
     QMainWindow *mainWindow = Core::ICore::mainWindow();
-    mainWindow->menuBar()->hide();
-    this->m_titleBar = new TitleBar(mainWindow);
+    bool mustShowMainWindow = false;
+    if (mainWindow->centralWidget()->objectName() == "CSDWrapper") {
+        auto wrapperLayout =
+            static_cast<QVBoxLayout *>(mainWindow->centralWidget()->layout());
+        this->m_titleBar = new TitleBar(mainWindow->centralWidget());
+        wrapperLayout->insertWidget(0, this->m_titleBar);
+        mustShowMainWindow = true;
+    } else {
+        mainWindow->layout()->setSpacing(0);
+
+        auto *wrapper = new QWidget(mainWindow);
+        wrapper->setObjectName("CSDWrapper");
+        wrapper->setMinimumHeight(0);
+
+        auto *layout = new QVBoxLayout();
+        layout->setSpacing(0);
+        layout->setContentsMargins(0, 0, 0, 0);
+
+        this->m_titleBar = new TitleBar(wrapper);
+        layout->addWidget(this->m_titleBar);
+        layout->addWidget(mainWindow->centralWidget());
+
+        wrapper->setLayout(layout);
+        mainWindow->setCentralWidget(wrapper);
+    }
+
     this->m_titleBar->setActiveColor(QColor(40, 44, 52));
 
     connect(
@@ -49,9 +73,7 @@ bool CSDPlugin::initialize([[maybe_unused]] const QStringList &arguments,
     this->m_filter->apply(
         mainWindow,
 #ifdef _WIN32
-        [this]() {
-            return this->m_titleBar->hovered();
-        },
+        [this]() { return this->m_titleBar->hovered(); },
 #endif
         [this]() {
             const bool on = this->m_titleBar->window()->isActiveWindow();
@@ -62,30 +84,9 @@ bool CSDPlugin::initialize([[maybe_unused]] const QStringList &arguments,
                 this->m_titleBar->window()->windowState());
         });
 
-    if (mainWindow->centralWidget()->objectName() == "CSDWrapper") {
-        auto wrapperLayout =
-            static_cast<QVBoxLayout *>(mainWindow->centralWidget()->layout());
-        wrapperLayout->insertWidget(0, this->m_titleBar);
+    if (mustShowMainWindow) {
         mainWindow->show();
-        return true;
     }
-
-    mainWindow->layout()->setSpacing(0);
-
-    auto *wrapper = new QWidget(mainWindow);
-    wrapper->setObjectName("CSDWrapper");
-    wrapper->setMinimumHeight(0);
-
-    auto *layout = new QVBoxLayout();
-    layout->setSpacing(0);
-    layout->setContentsMargins(0, 0, 0, 0);
-
-    layout->addWidget(this->m_titleBar);
-    layout->addWidget(mainWindow->centralWidget());
-
-    wrapper->setLayout(layout);
-
-    mainWindow->setCentralWidget(wrapper);
 
     return true;
 }

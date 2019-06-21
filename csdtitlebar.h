@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QColor>
+#include <QProxyStyle>
 #include <QWidget>
 
 #include <optional>
@@ -8,10 +9,25 @@
 class QHBoxLayout;
 class QLayout;
 class QLabel;
+class QMenuBar;
 
 namespace CSD {
 
 class TitleBarButton;
+
+class CSDProxyStyle : public QProxyStyle {
+    Q_OBJECT
+
+public:
+    CSDProxyStyle(QStyle *style = nullptr);
+    void drawControl(ControlElement element,
+                     const QStyleOption *option,
+                     QPainter *painter,
+                     const QWidget *widget = nullptr) const override;
+    int pixelMetric(PixelMetric metric,
+                    const QStyleOption *option = nullptr,
+                    const QWidget *widget = nullptr) const override;
+};
 
 class TitleBar : public QWidget {
     Q_OBJECT
@@ -26,19 +42,13 @@ private:
     bool m_maximized = false;
     QColor m_activeColor;
     QHBoxLayout *m_horizontalLayout;
+    QMenuBar *m_menuBar;
     QWidget *m_leftMargin;
     TitleBarButton *m_buttonCaptionIcon;
-    TitleBarButton *m_buttonMenuFile;
-    TitleBarButton *m_buttonMenuEdit;
-    TitleBarButton *m_buttonMenuBuild;
-    TitleBarButton *m_buttonMenuDebug;
-    TitleBarButton *m_buttonMenuAnalyze;
-    TitleBarButton *m_buttonMenuTools;
-    TitleBarButton *m_buttonMenuWindow;
-    TitleBarButton *m_buttonMenuHelp;
     TitleBarButton *m_buttonMinimize;
     TitleBarButton *m_buttonMaximizeRestore;
     TitleBarButton *m_buttonClose;
+    CSDProxyStyle *m_proxyStyle;
 
 protected:
     void paintEvent(QPaintEvent *event) override;
