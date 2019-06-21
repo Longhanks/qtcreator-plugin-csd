@@ -76,6 +76,7 @@ CSDPlugin::ShutdownFlag CSDPlugin::aboutToShutdown() {
 #ifndef __APPLE__
     this->m_filter->setParent(nullptr);
     delete this->m_filter;
+    this->m_filter = nullptr;
 #endif
     return SynchronousShutdown;
 }

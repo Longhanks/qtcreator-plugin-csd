@@ -14,7 +14,6 @@ namespace CSD {
 
 class TitleBarButton;
 
-
 class TitleBar : public QWidget {
     Q_OBJECT
     Q_PROPERTY(bool active READ isActive WRITE setActive)
