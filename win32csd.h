@@ -20,6 +20,8 @@ namespace CSD::Internal {
 
 class Win32ClientSideDecorationFilter : public QObject,
                                         public QAbstractNativeEventFilter {
+    Q_OBJECT
+
 private:
     struct HWNDData {
         QWidget *widget;

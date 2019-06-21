@@ -69,4 +69,15 @@ bool CSDPlugin::initialize([[maybe_unused]] const QStringList &arguments,
 
 void CSDPlugin::extensionsInitialized() {}
 
+CSDPlugin::ShutdownFlag CSDPlugin::aboutToShutdown() {
+#ifdef _WIN32
+    QCoreApplication::instance()->removeNativeEventFilter(this->m_filter);
+#endif
+#ifndef __APPLE__
+    this->m_filter->setParent(nullptr);
+    delete this->m_filter;
+#endif
+    return SynchronousShutdown;
+}
+
 } // namespace CSD::Internal

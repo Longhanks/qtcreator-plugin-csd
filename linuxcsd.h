@@ -8,6 +8,7 @@
 namespace CSD::Internal {
 
 class LinuxClientSideDecorationFilter : public QObject {
+    Q_OBJECT
 
 private:
     using Callback = std::function<void()>;
