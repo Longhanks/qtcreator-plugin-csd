@@ -10,7 +10,7 @@ Licensed under the [MIT](https://github.com/Longhanks/qtcreator-plugin-csd/blob/
 
 ## Dependencies
 
-This plugin depends on the [LayoutSupport](https://github.com/Longhanks/qtcreator-plugin-layoutsupport) plugin.
+This plugin depends on the [LayoutSupport](https://github.com/Longhanks/qtcreator-plugin-layoutsupport) and the [OneDark](https://github.com/Longhanks/qtcreator-plugin-onedark) plugins.
 
 ## Build instructions
 
