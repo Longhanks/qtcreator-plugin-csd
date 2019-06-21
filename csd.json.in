@@ -12,6 +12,7 @@
         { "Name" : "Core", "Version" : "${QTCREATOR_VERSION}" },
         { "Name" : "ProjectExplorer", "Version" : "${QTCREATOR_VERSION}" },
         { "Name" : "TextEditor", "Version" : "${QTCREATOR_VERSION}" },
-        { "Name" : "onedark", "Version" : "0.1.0" }
+        { "Name" : "onedark", "Version" : "0.1.0" },
+        { "Name" : "layoutsupport", "Version" : "0.1.0" }
     ]
 }

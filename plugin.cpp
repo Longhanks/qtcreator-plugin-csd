@@ -25,31 +25,11 @@ CSDPlugin::CSDPlugin() {
 bool CSDPlugin::initialize([[maybe_unused]] const QStringList &arguments,
                            [[maybe_unused]] QString *errorString) {
     QMainWindow *mainWindow = Core::ICore::mainWindow();
-    bool mustShowMainWindow = false;
-    if (mainWindow->centralWidget()->objectName() == "CSDWrapper") {
-        auto wrapperLayout =
-            static_cast<QVBoxLayout *>(mainWindow->centralWidget()->layout());
-        this->m_titleBar = new TitleBar(mainWindow->centralWidget());
-        wrapperLayout->insertWidget(0, this->m_titleBar);
-        mustShowMainWindow = true;
-    } else {
-        mainWindow->layout()->setSpacing(0);
 
-        auto *wrapper = new QWidget(mainWindow);
-        wrapper->setObjectName("CSDWrapper");
-        wrapper->setMinimumHeight(0);
-
-        auto *layout = new QVBoxLayout();
-        layout->setSpacing(0);
-        layout->setContentsMargins(0, 0, 0, 0);
-
-        this->m_titleBar = new TitleBar(wrapper);
-        layout->addWidget(this->m_titleBar);
-        layout->addWidget(mainWindow->centralWidget());
-
-        wrapper->setLayout(layout);
-        mainWindow->setCentralWidget(wrapper);
-    }
+    auto wrapperLayout =
+        static_cast<QVBoxLayout *>(mainWindow->centralWidget()->layout());
+    this->m_titleBar = new TitleBar(mainWindow->centralWidget());
+    wrapperLayout->insertWidget(0, this->m_titleBar);
 
     this->m_titleBar->setActiveColor(QColor(40, 44, 52));
 
@@ -83,10 +63,6 @@ bool CSDPlugin::initialize([[maybe_unused]] const QStringList &arguments,
             this->m_titleBar->onWindowStateChange(
                 this->m_titleBar->window()->windowState());
         });
-
-    if (mustShowMainWindow) {
-        mainWindow->show();
-    }
 
     return true;
 }
