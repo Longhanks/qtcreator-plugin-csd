@@ -52,25 +52,6 @@ void TitleBarButton::paintEvent([[maybe_unused]] QPaintEvent *event) {
     case Role::CaptionIcon: {
         break;
     }
-    case Role::MenuBarItem: {
-        if (isActive) {
-            styleOptionButton.palette.setColor(QPalette::ButtonText,
-                                               QColor(171, 178, 191));
-        } else {
-            styleOptionButton.palette.setColor(QPalette::ButtonText,
-                                               Qt::darkGray);
-        }
-        if (isHovered) {
-            buttonBrush.setColor(hoverColor);
-            qDrawShadePanel(&stylePainter,
-                            styleOptionButton.rect,
-                            styleOptionButton.palette,
-                            false,
-                            0,
-                            &buttonBrush);
-        }
-        break;
-    }
     case Role::Minimize: {
         [[fallthrough]];
     }

@@ -16,76 +16,7 @@
 #include <QPainter>
 #include <QStyleOption>
 
-#ifdef _WIN32
-#include <QtWinExtras/QtWin>
-#endif
-
 namespace CSD {
-
-CSDProxyStyle::CSDProxyStyle(QStyle *style) : QProxyStyle(style) {}
-
-void CSDProxyStyle::drawControl(ControlElement element,
-                                const QStyleOption *option,
-                                QPainter *painter,
-                                const QWidget *widget) const {
-    if (element == CE_MenuBarEmptyArea) {
-        return;
-    }
-
-    if (element == CE_MenuBarItem) {
-        if (const QStyleOptionMenuItem *mbi =
-                qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
-            uint alignment = Qt::AlignCenter | Qt::TextShowMnemonic |
-                             Qt::TextDontClip | Qt::TextSingleLine;
-            if (!this->proxy()->styleHint(SH_UnderlineShortcut, mbi, widget)) {
-                alignment |= Qt::TextHideMnemonic;
-            }
-            int iconExtent = this->proxy()->pixelMetric(PM_SmallIconSize);
-            QPixmap pix = mbi->icon.pixmap(widget->window()->windowHandle(),
-                                           QSize(iconExtent, iconExtent),
-                                           (mbi->state & State_Enabled)
-                                               ? QIcon::Normal
-                                               : QIcon::Disabled);
-            if (!pix.isNull()) {
-                this->proxy()->drawItemPixmap(
-                    painter, mbi->rect, static_cast<int>(alignment), pix);
-            } else {
-                auto titleBar =
-                    static_cast<const TitleBar *>(widget->parentWidget());
-                if (mbi->state & State_Enabled && !titleBar->isActive()) {
-                    const_cast<QStyleOptionMenuItem *>(mbi)->palette.setColor(
-                        QPalette::ButtonText, Qt::darkGray);
-                }
-                this->proxy()->drawItemText(painter,
-                                            mbi->rect,
-                                            static_cast<int>(alignment),
-                                            mbi->palette,
-                                            mbi->state & State_Enabled,
-                                            mbi->text,
-                                            QPalette::ButtonText);
-                if (mbi->state & State_Selected) {
-                    const auto hoverColor = QColor(171, 178, 191, 75);
-                    painter->fillRect(mbi->rect, QBrush(hoverColor));
-                }
-            }
-            return;
-        }
-    }
-
-    return QProxyStyle::drawControl(element, option, painter, widget);
-}
-
-int CSDProxyStyle::pixelMetric(PixelMetric metric,
-                               const QStyleOption *option,
-                               const QWidget *widget) const {
-    if (metric == PM_MenuBarPanelWidth) {
-        return 0;
-    }
-    if (metric == PM_MenuBarVMargin) {
-        return 5;
-    }
-    return QProxyStyle::pixelMetric(metric, option, widget);
-}
 
 TitleBar::TitleBar(QWidget *parent) : QWidget(parent) {
     this->setObjectName("TitleBar");
@@ -130,8 +61,6 @@ TitleBar::TitleBar(QWidget *parent) : QWidget(parent) {
     this->m_menuBar = Core::ICore::mainWindow()->menuBar();
     this->m_horizontalLayout->addWidget(this->m_menuBar);
     this->m_menuBar->setFixedHeight(30);
-    this->m_proxyStyle = new CSDProxyStyle(this->style());
-    this->m_menuBar->setStyle(this->m_proxyStyle);
 
     auto *emptySpace = new QWidget(this);
     this->m_horizontalLayout->addWidget(emptySpace, 1);
