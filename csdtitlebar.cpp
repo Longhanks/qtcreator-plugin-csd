@@ -133,6 +133,11 @@ std::optional<QColor> TitleBar::readDWMColorizationColor() {
 }
 #endif
 
+TitleBar::~TitleBar() {
+    Core::ICore::mainWindow()->setMenuBar(this->m_menuBar);
+    this->m_menuBar = nullptr;
+}
+
 void TitleBar::paintEvent([[maybe_unused]] QPaintEvent *event) {
     auto styleOption = QStyleOption();
     styleOption.init(this);

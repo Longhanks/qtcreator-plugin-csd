@@ -39,6 +39,7 @@ protected:
 
 public:
     explicit TitleBar(QWidget *parent = nullptr);
+    ~TitleBar() override;
 
     bool isActive() const;
     void setActive(bool active);

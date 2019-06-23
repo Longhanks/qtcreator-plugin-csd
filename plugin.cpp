@@ -8,7 +8,6 @@
 #include <QApplication>
 #include <QBoxLayout>
 #include <QMenuBar>
-#include <QTimer>
 
 namespace CSD::Internal {
 
@@ -20,6 +19,12 @@ CSDPlugin::CSDPlugin() {
 #else
     this->m_filter = new LinuxClientSideDecorationFilter(this);
 #endif
+}
+
+CSDPlugin::~CSDPlugin() {
+    delete this->m_filter;
+    this->m_filter = nullptr;
+    this->m_titleBar = nullptr;
 }
 
 bool CSDPlugin::initialize([[maybe_unused]] const QStringList &arguments,
@@ -47,8 +52,8 @@ bool CSDPlugin::initialize([[maybe_unused]] const QStringList &arguments,
             });
     connect(this->m_titleBar,
             &TitleBar::closeClicked,
-            QCoreApplication::instance(),
-            &QCoreApplication::quit);
+            mainWindow,
+            &QWidget::close);
 
     this->m_filter->apply(
         mainWindow,
@@ -67,18 +72,13 @@ bool CSDPlugin::initialize([[maybe_unused]] const QStringList &arguments,
     return true;
 }
 
-void CSDPlugin::extensionsInitialized() {}
-
 CSDPlugin::ShutdownFlag CSDPlugin::aboutToShutdown() {
 #ifdef _WIN32
     QCoreApplication::instance()->removeNativeEventFilter(this->m_filter);
 #endif
-#ifndef __APPLE__
-    this->m_filter->setParent(nullptr);
-    delete this->m_filter;
-    this->m_filter = nullptr;
-#endif
     return SynchronousShutdown;
 }
+
+void CSDPlugin::extensionsInitialized() {}
 
 } // namespace CSD::Internal

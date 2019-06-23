@@ -14,7 +14,11 @@ LinuxClientSideDecorationFilter::LinuxClientSideDecorationFilter(
     QObject *parent)
     : QObject(parent) {}
 
-LinuxClientSideDecorationFilter::~LinuxClientSideDecorationFilter() = default;
+LinuxClientSideDecorationFilter::~LinuxClientSideDecorationFilter() {
+    for (const auto &pair : this->m_callbacks) {
+        pair.first->removeEventFilter(this);
+    }
+}
 
 bool LinuxClientSideDecorationFilter::eventFilter(QObject *watched,
                                                   QEvent *event) {

@@ -24,6 +24,7 @@ class CSDPlugin : public ExtensionSystem::IPlugin {
 
 public:
     CSDPlugin();
+    ~CSDPlugin() override;
     bool initialize(const QStringList &arguments,
                     QString *errorString) override;
     void extensionsInitialized() override;
