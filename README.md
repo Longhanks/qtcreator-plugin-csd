@@ -2,6 +2,10 @@
 
 Client-side decorated unified title-/toolbar for [Qt Creator](http://qt-project.org/wiki/Category:Tools::QtCreator).
 
+## Screenshot
+
+![Screenshot](./docs/screenshot.png "Screenshot")
+
 ## Copyright / License
 
 Copyright (C) 2019 Andreas Schulz. All rights reserved.
