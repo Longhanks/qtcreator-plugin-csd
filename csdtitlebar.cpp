@@ -16,7 +16,30 @@
 #include <QPainter>
 #include <QStyleOption>
 
+#if !defined(_WIN32) && !defined(__APPLE__)
+#include <QMouseEvent>
+#include <QWindow>
+
+#include <QX11Info>
+
+#include <private/qhighdpiscaling_p.h>
+#include <qpa/qplatformwindow.h>
+
+#include <cstring>
+#endif
+
 namespace CSD {
+
+#if !defined(_WIN32) && !defined(__APPLE__)
+constexpr static const char _NET_WM_MOVERESIZE[] = "_NET_WM_MOVERESIZE";
+
+static QWidget *titleBarTopLevelWidget(QWidget *w) {
+    while (w && !w->isWindow() && w->windowType() != Qt::SubWindow) {
+        w = w->parentWidget();
+    }
+    return w;
+}
+#endif
 
 TitleBar::TitleBar(QWidget *parent) : QWidget(parent) {
     this->setObjectName("TitleBar");
@@ -63,6 +86,7 @@ TitleBar::TitleBar(QWidget *parent) : QWidget(parent) {
     this->m_menuBar->setFixedHeight(30);
 
     auto *emptySpace = new QWidget(this);
+    emptySpace->setAttribute(Qt::WA_TransparentForMouseEvents);
     this->m_horizontalLayout->addWidget(emptySpace, 1);
 
     this->m_buttonMinimize =
@@ -137,6 +161,73 @@ TitleBar::~TitleBar() {
     Core::ICore::mainWindow()->setMenuBar(this->m_menuBar);
     this->m_menuBar = nullptr;
 }
+
+#if !defined(_WIN32) && !defined(__APPLE__)
+void TitleBar::mousePressEvent(QMouseEvent *event) {
+    if (!QX11Info::isPlatformX11() || event->button() != Qt::LeftButton) {
+        QWidget::mousePressEvent(event);
+        return;
+    }
+
+    QWidget *tlw = titleBarTopLevelWidget(this);
+
+    if (tlw->isWindow() && tlw->windowHandle() &&
+        !(tlw->windowFlags() & Qt::X11BypassWindowManagerHint) &&
+        !tlw->testAttribute(Qt::WA_DontShowOnScreen) &&
+        !tlw->hasHeightForWidth()) {
+        QPlatformWindow *platformWindow = tlw->windowHandle()->handle();
+        const QPoint globalPos = QHighDpi::toNativePixels(
+            platformWindow->mapToGlobal(this->mapTo(tlw, event->pos())),
+            platformWindow->screen());
+
+        const xcb_atom_t moveResizeAtom = []() -> xcb_atom_t {
+            xcb_intern_atom_cookie_t cookie = xcb_intern_atom(
+                QX11Info::connection(),
+                false,
+                static_cast<std::uint16_t>(std::strlen(_NET_WM_MOVERESIZE)),
+                _NET_WM_MOVERESIZE);
+            xcb_intern_atom_reply_t *reply =
+                xcb_intern_atom_reply(QX11Info::connection(), cookie, nullptr);
+            const xcb_atom_t moveResizeAtomCopy = reply->atom;
+            free(reply);
+            return moveResizeAtomCopy;
+        }();
+
+        xcb_client_message_event_t xev;
+        xev.response_type = XCB_CLIENT_MESSAGE;
+        xev.type = moveResizeAtom;
+        xev.sequence = 0;
+        xev.window = static_cast<xcb_window_t>(platformWindow->winId());
+        xev.format = 32;
+        xev.data.data32[0] = static_cast<std::uint32_t>(globalPos.x());
+        xev.data.data32[1] = static_cast<std::uint32_t>(globalPos.y());
+        xev.data.data32[2] = 8; // move
+        xev.data.data32[3] = XCB_BUTTON_INDEX_1;
+        xev.data.data32[4] = 0;
+
+        const xcb_window_t rootWindow = [platformWindow]() -> xcb_window_t {
+            xcb_query_tree_cookie_t queryTreeCookie = xcb_query_tree(
+                QX11Info::connection(),
+                static_cast<xcb_window_t>(platformWindow->winId()));
+            xcb_query_tree_reply_t *queryTreeReply = xcb_query_tree_reply(
+                QX11Info::connection(), queryTreeCookie, nullptr);
+            xcb_window_t rootWindowCopy = queryTreeReply->root;
+            free(queryTreeReply);
+            return rootWindowCopy;
+        }();
+
+        std::uint32_t eventFlags = XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT |
+                                   XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY;
+
+        xcb_ungrab_pointer(QX11Info::connection(), XCB_CURRENT_TIME);
+        xcb_send_event(QX11Info::connection(),
+                       false,
+                       rootWindow,
+                       eventFlags,
+                       reinterpret_cast<const char *>(&xev));
+    }
+}
+#endif
 
 void TitleBar::paintEvent([[maybe_unused]] QPaintEvent *event) {
     auto styleOption = QStyleOption();

@@ -49,7 +49,7 @@ project(csd LANGUAGES CXX VERSION 0.1.0)
 
 configure_file("${CMAKE_SOURCE_DIR}/csd.json.in" "${CMAKE_CURRENT_BINARY_DIR}/csd.json")
 
-add_library(csd SHARED csdtitlebar.cpp csdtitlebarbutton.cpp plugin.cpp)
+add_library(${PROJECT_NAME} SHARED csdtitlebar.cpp csdtitlebarbutton.cpp plugin.cpp)
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang" AND NOT MSVC)
     list(APPEND COMPILER_WARNINGS
@@ -107,17 +107,17 @@ else ()
 endif ()
 string(REPLACE ";" " " COMPILER_WARNINGS_STR "${COMPILER_WARNINGS}")
 
-get_target_property(csd_SOURCES csd SOURCES)
+get_target_property(${PROJECT_NAME}_SOURCES ${PROJECT_NAME} SOURCES)
 
-foreach (csd_SOURCE ${csd_SOURCES})
-    set_source_files_properties(${csd_SOURCE} PROPERTIES COMPILE_FLAGS "${COMPILER_WARNINGS_STR}")
+foreach (${PROJECT_NAME}_SOURCE ${${PROJECT_NAME}_SOURCES})
+    set_source_files_properties(${${PROJECT_NAME}_SOURCE} PROPERTIES COMPILE_FLAGS "${COMPILER_WARNINGS_STR}")
 endforeach ()
 
-set_target_properties(csd PROPERTIES AUTOMOC ON)
+set_target_properties(${PROJECT_NAME} PROPERTIES AUTOMOC ON)
 
-target_include_directories(csd SYSTEM PRIVATE ${Qt5Gui_PRIVATE_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${Qt5Gui_PRIVATE_INCLUDE_DIRS})
 
-target_include_directories(csd SYSTEM PRIVATE
+target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
     "${CMAKE_CURRENT_BINARY_DIR}"
     "${Qt5Widgets_INCLUDE_DIRS}"
     "${QTCREATOR_SRC}/src/libs"
@@ -131,21 +131,24 @@ if (APPLE)
     set(QTWIDGETS_LIB "-framework QtWidgets")
     set(QTGUI_LIB "-framework QtGui")
     set(QTCORE_LIB "-framework QtCore")
-    target_link_options(csd PRIVATE
+    target_link_options(${PROJECT_NAME} PRIVATE
         -Wl,-install_name,@rpath/PlugIns/
         -compatibility_version "${QTCREATOR_VERSION}"
         -iframework "${QTCREATOR_BIN_DIR}/../Frameworks"
     )
 elseif (UNIX)
+    find_package(Qt5X11Extras REQUIRED)
+    target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${Qt5X11Extras_INCLUDE_DIRS})
     find_library(CORE_LIB NAMES Core PATHS "${QTCREATOR_BIN_DIR}/../lib/qtcreator/plugins")
     find_library(EXTENSIONSYSTEM_LIB NAMES ExtensionSystem PATHS "${QTCREATOR_BIN_DIR}/../lib/qtcreator")
     find_library(UTILS_LIB NAMES Utils PATHS "${QTCREATOR_BIN_DIR}/../lib/qtcreator")
-    set(QTWIDGETS_LIB "${Qt5Widgets_LIBRARIES}")
-    set(QTGUI_LIB "${Qt5Gui_LIBRARIES}")
-    set(QTCORE_LIB "${Qt5Core_LIBRARIES}")
-    set_target_properties(csd PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
+    set(QTWIDGETS_LIB "${QTCREATOR_BIN_DIR}/../lib/Qt/lib/libQt5Widgets.so.5")
+    set(QTGUI_LIB "${QTCREATOR_BIN_DIR}/../lib/Qt/lib/libQt5Gui.so.5")
+    set(QTCORE_LIB "${QTCREATOR_BIN_DIR}/../lib/Qt/lib/libQt5Core.so.5")
+    set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
 
-    target_sources(csd PRIVATE linuxcsd.cpp)
+    target_sources(${PROJECT_NAME} PRIVATE linuxcsd.cpp)
+    target_link_libraries(${PROJECT_NAME} PRIVATE "${QTCREATOR_BIN_DIR}/../lib/Qt/lib/libQt5X11Extras.so.5")
 else ()
     find_library(CORE_LIB NAMES Core4 PATHS "${CMAKE_SOURCE_DIR}/lib/qtcreator/plugins")
     find_library(EXTENSIONSYSTEM_LIB NAMES ExtensionSystem4 PATHS "${CMAKE_SOURCE_DIR}/lib/qtcreator")
@@ -154,19 +157,19 @@ else ()
     set(QTGUI_LIB "${Qt5Gui_LIBRARIES}")
     set(QTCORE_LIB "${Qt5Core_LIBRARIES}")
 
-    target_sources(csd PRIVATE win32csd.cpp)
+    target_sources(${PROJECT_NAME} PRIVATE win32csd.cpp)
 
-    target_compile_definitions(csd PUBLIC WIN32_LEAN_AND_MEAN)
-    target_compile_definitions(csd PUBLIC NOMINMAX)
-    target_compile_definitions(csd PUBLIC UNICODE)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC WIN32_LEAN_AND_MEAN)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC UNICODE)
 
     find_library(DWMAPI "dwmapi")
-    target_link_libraries(csd PRIVATE
+    target_link_libraries(${PROJECT_NAME} PRIVATE
         ${DWMAPI}
     )
 endif ()
 
-target_link_libraries(csd PRIVATE
+target_link_libraries(${PROJECT_NAME} PRIVATE
     "${CORE_LIB}"
     "${EXTENSIONSYSTEM_LIB}"
     "${UTILS_LIB}"
@@ -176,10 +179,10 @@ target_link_libraries(csd PRIVATE
 )
 
 if (APPLE)
-    install(TARGETS csd DESTINATION "${QTCREATOR_BIN_DIR}/../PlugIns")
+    install(TARGETS ${PROJECT_NAME} DESTINATION "${QTCREATOR_BIN_DIR}/../PlugIns")
     install(CODE "execute_process(COMMAND \"sudo xattr -rd com.apple.quarantine ${QTCREATOR_BIN_DIR}/../../\")")
 elseif (UNIX)
-    install(TARGETS csd DESTINATION "${QTCREATOR_BIN_DIR}/../lib/qtcreator/plugins")
+    install(TARGETS ${PROJECT_NAME} DESTINATION "${QTCREATOR_BIN_DIR}/../lib/qtcreator/plugins")
 else ()
     file(TO_CMAKE_PATH $ENV{LOCALAPPDATA} LOCALAPPDATA_PATH)
     if ("${LOCALAPPDATA_PATH}" STREQUAL "")
@@ -189,5 +192,5 @@ else ()
     if (NOT IS_DIRECTORY "${PLUGINDIR_PATH}")
         file(MAKE_DIRECTORY "${PLUGINDIR_PATH}")
     endif ()
-    install(TARGETS csd RUNTIME DESTINATION "${PLUGINDIR_PATH}")
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION "${PLUGINDIR_PATH}")
 endif ()

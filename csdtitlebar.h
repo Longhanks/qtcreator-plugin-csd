@@ -35,6 +35,9 @@ private:
     TitleBarButton *m_buttonClose;
 
 protected:
+#if !defined(_WIN32) && !defined(__APPLE__)
+    void mousePressEvent(QMouseEvent *event) override;
+#endif
     void paintEvent(QPaintEvent *event) override;
 
 public:
