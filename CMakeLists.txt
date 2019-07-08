@@ -49,7 +49,7 @@ project(csd LANGUAGES CXX VERSION 0.1.0)
 
 configure_file("${CMAKE_SOURCE_DIR}/csd.json.in" "${CMAKE_CURRENT_BINARY_DIR}/csd.json")
 
-add_library(${PROJECT_NAME} SHARED csdtitlebar.cpp csdtitlebarbutton.cpp plugin.cpp)
+add_library(${PROJECT_NAME} SHARED csd.qrc csdtitlebar.cpp csdtitlebarbutton.cpp plugin.cpp)
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang" AND NOT MSVC)
     list(APPEND COMPILER_WARNINGS
@@ -113,7 +113,7 @@ foreach (${PROJECT_NAME}_SOURCE ${${PROJECT_NAME}_SOURCES})
     set_source_files_properties(${${PROJECT_NAME}_SOURCE} PROPERTIES COMPILE_FLAGS "${COMPILER_WARNINGS_STR}")
 endforeach ()
 
-set_target_properties(${PROJECT_NAME} PROPERTIES AUTOMOC ON)
+set_target_properties(${PROJECT_NAME} PROPERTIES AUTOMOC ON AUTORCC ON)
 
 target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${Qt5Gui_PRIVATE_INCLUDE_DIRS})
 

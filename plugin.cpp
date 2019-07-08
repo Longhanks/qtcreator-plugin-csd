@@ -9,9 +9,14 @@
 #include <QBoxLayout>
 #include <QMenuBar>
 
+inline void init_resource() {
+    Q_INIT_RESOURCE(csd);
+}
+
 namespace CSD::Internal {
 
 CSDPlugin::CSDPlugin() {
+    init_resource();
 #ifdef _WIN32
     this->m_filter = new Win32ClientSideDecorationFilter(this);
     QCoreApplication::instance()->installNativeEventFilter(this->m_filter);

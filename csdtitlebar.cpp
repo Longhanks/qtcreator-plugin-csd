@@ -95,7 +95,9 @@ TitleBar::TitleBar(QWidget *parent) : QWidget(parent) {
     this->m_buttonMinimize->setMinimumSize(QSize(46, 30));
     this->m_buttonMinimize->setMaximumSize(QSize(46, 30));
     this->m_buttonMinimize->setFocusPolicy(Qt::NoFocus);
-    this->m_buttonMinimize->setText("―");
+    this->m_buttonMinimize->setIconSize(QSize(10, 10));
+    this->m_buttonMinimize->setIcon(
+        QIcon(":/resources/chrome-minimize-dark.svg"));
     this->m_horizontalLayout->addWidget(this->m_buttonMinimize);
     connect(this->m_buttonMinimize, &QPushButton::clicked, this, [this]() {
         emit this->minimizeClicked();
@@ -107,7 +109,9 @@ TitleBar::TitleBar(QWidget *parent) : QWidget(parent) {
     this->m_buttonMaximizeRestore->setMinimumSize(QSize(46, 30));
     this->m_buttonMaximizeRestore->setMaximumSize(QSize(46, 30));
     this->m_buttonMaximizeRestore->setFocusPolicy(Qt::NoFocus);
-    this->m_buttonMaximizeRestore->setText("☐");
+    this->m_buttonMaximizeRestore->setIconSize(QSize(10, 10));
+    this->m_buttonMaximizeRestore->setIcon(
+        QIcon(":/resources/chrome-maximize-dark.svg"));
     this->m_horizontalLayout->addWidget(this->m_buttonMaximizeRestore);
     connect(this->m_buttonMaximizeRestore,
             &QPushButton::clicked,
@@ -119,7 +123,8 @@ TitleBar::TitleBar(QWidget *parent) : QWidget(parent) {
     this->m_buttonClose->setMinimumSize(QSize(46, 30));
     this->m_buttonClose->setMaximumSize(QSize(46, 30));
     this->m_buttonClose->setFocusPolicy(Qt::NoFocus);
-    this->m_buttonClose->setText("✕");
+    this->m_buttonClose->setIconSize(QSize(10, 10));
+    this->m_buttonClose->setIcon(QIcon(":/resources/chrome-close-dark.svg"));
     this->m_horizontalLayout->addWidget(this->m_buttonClose);
     connect(this->m_buttonClose, &QPushButton::clicked, this, [this]() {
         emit this->closeClicked();
@@ -270,6 +275,13 @@ bool TitleBar::isMaximized() const {
 
 void TitleBar::setMaximized(bool maximized) {
     this->m_maximized = maximized;
+    if (this->m_maximized) {
+        this->m_buttonMaximizeRestore->setIcon(
+            QIcon(":/resources/chrome-restore-dark.svg"));
+    } else {
+        this->m_buttonMaximizeRestore->setIcon(
+            QIcon(":/resources/chrome-maximize-dark.svg"));
+    }
 }
 
 void TitleBar::setMinimizable(bool on) {
