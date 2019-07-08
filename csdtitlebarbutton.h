@@ -22,15 +22,11 @@ public:
                             Role role,
                             TitleBar *parent = nullptr);
 
-    [[nodiscard]] bool isActive() const;
-    void setActive(bool active);
-
 protected:
     void paintEvent(QPaintEvent *event) override;
 
 private:
     Role m_role;
-    bool m_active = false;
 };
 
 } // namespace CSD

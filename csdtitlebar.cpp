@@ -96,8 +96,6 @@ TitleBar::TitleBar(QWidget *parent) : QWidget(parent) {
     this->m_buttonMinimize->setMaximumSize(QSize(46, 30));
     this->m_buttonMinimize->setFocusPolicy(Qt::NoFocus);
     this->m_buttonMinimize->setIconSize(QSize(10, 10));
-    this->m_buttonMinimize->setIcon(
-        QIcon(":/resources/chrome-minimize-dark.svg"));
     this->m_horizontalLayout->addWidget(this->m_buttonMinimize);
     connect(this->m_buttonMinimize, &QPushButton::clicked, this, [this]() {
         emit this->minimizeClicked();
@@ -110,8 +108,6 @@ TitleBar::TitleBar(QWidget *parent) : QWidget(parent) {
     this->m_buttonMaximizeRestore->setMaximumSize(QSize(46, 30));
     this->m_buttonMaximizeRestore->setFocusPolicy(Qt::NoFocus);
     this->m_buttonMaximizeRestore->setIconSize(QSize(10, 10));
-    this->m_buttonMaximizeRestore->setIcon(
-        QIcon(":/resources/chrome-maximize-dark.svg"));
     this->m_horizontalLayout->addWidget(this->m_buttonMaximizeRestore);
     connect(this->m_buttonMaximizeRestore,
             &QPushButton::clicked,
@@ -124,7 +120,6 @@ TitleBar::TitleBar(QWidget *parent) : QWidget(parent) {
     this->m_buttonClose->setMaximumSize(QSize(46, 30));
     this->m_buttonClose->setFocusPolicy(Qt::NoFocus);
     this->m_buttonClose->setIconSize(QSize(10, 10));
-    this->m_buttonClose->setIcon(QIcon(":/resources/chrome-close-dark.svg"));
     this->m_horizontalLayout->addWidget(this->m_buttonClose);
     connect(this->m_buttonClose, &QPushButton::clicked, this, [this]() {
         emit this->closeClicked();
@@ -253,19 +248,33 @@ void TitleBar::setActive(bool active) {
         palette.setColor(QPalette::Background, this->m_activeColor);
         this->setPalette(palette);
 
-        this->m_buttonCaptionIcon->setActive(true);
-        this->m_buttonMinimize->setActive(true);
-        this->m_buttonMaximizeRestore->setActive(true);
-        this->m_buttonClose->setActive(true);
+        this->m_buttonMinimize->setIcon(
+            QIcon(":/resources/chrome-minimize-dark.svg"));
+        if (this->m_maximized) {
+            this->m_buttonMaximizeRestore->setIcon(
+                QIcon(":/resources/chrome-restore-dark.svg"));
+        } else {
+            this->m_buttonMaximizeRestore->setIcon(
+                QIcon(":/resources/chrome-maximize-dark.svg"));
+        }
+        this->m_buttonClose->setIcon(
+            QIcon(":/resources/chrome-close-dark.svg"));
     } else {
         auto palette = this->palette();
         palette.setColor(QPalette::Background, QColor(33, 37, 43));
         this->setPalette(palette);
 
-        this->m_buttonCaptionIcon->setActive(false);
-        this->m_buttonMinimize->setActive(false);
-        this->m_buttonMaximizeRestore->setActive(false);
-        this->m_buttonClose->setActive(false);
+        this->m_buttonMinimize->setIcon(
+            QIcon(":/resources/chrome-minimize-dark-disabled.svg"));
+        if (this->m_maximized) {
+            this->m_buttonMaximizeRestore->setIcon(
+                QIcon(":/resources/chrome-restore-dark-disabled.svg"));
+        } else {
+            this->m_buttonMaximizeRestore->setIcon(
+                QIcon(":/resources/chrome-maximize-dark-disabled.svg"));
+        }
+        this->m_buttonClose->setIcon(
+            QIcon(":/resources/chrome-close-dark-disabled.svg"));
     }
 }
 
@@ -275,12 +284,30 @@ bool TitleBar::isMaximized() const {
 
 void TitleBar::setMaximized(bool maximized) {
     this->m_maximized = maximized;
-    if (this->m_maximized) {
-        this->m_buttonMaximizeRestore->setIcon(
-            QIcon(":/resources/chrome-restore-dark.svg"));
+    if (this->m_active) {
+        this->m_buttonMinimize->setIcon(
+            QIcon(":/resources/chrome-minimize-dark.svg"));
+        if (this->m_maximized) {
+            this->m_buttonMaximizeRestore->setIcon(
+                QIcon(":/resources/chrome-restore-dark.svg"));
+        } else {
+            this->m_buttonMaximizeRestore->setIcon(
+                QIcon(":/resources/chrome-maximize-dark.svg"));
+        }
+        this->m_buttonClose->setIcon(
+            QIcon(":/resources/chrome-close-dark.svg"));
     } else {
-        this->m_buttonMaximizeRestore->setIcon(
-            QIcon(":/resources/chrome-maximize-dark.svg"));
+        this->m_buttonMinimize->setIcon(
+            QIcon(":/resources/chrome-minimize-dark-disabled.svg"));
+        if (this->m_maximized) {
+            this->m_buttonMaximizeRestore->setIcon(
+                QIcon(":/resources/chrome-restore-dark-disabled.svg"));
+        } else {
+            this->m_buttonMaximizeRestore->setIcon(
+                QIcon(":/resources/chrome-maximize-dark-disabled.svg"));
+        }
+        this->m_buttonClose->setIcon(
+            QIcon(":/resources/chrome-close-dark-disabled.svg"));
     }
 }
 
