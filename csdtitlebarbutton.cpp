@@ -4,6 +4,8 @@
 
 #include <utils/theme/theme.h>
 
+#include <QEvent>
+#include <QPropertyAnimation>
 #include <QStyleOption>
 #include <QStylePainter>
 
@@ -25,6 +27,37 @@ TitleBarButton::TitleBarButton(const QIcon &icon,
     this->setAttribute(Qt::WidgetAttribute::WA_Hover, true);
 }
 
+double TitleBarButton::fader() const {
+    return this->m_fader;
+}
+
+void TitleBarButton::setFader(double value) {
+    this->m_fader = value;
+    this->update();
+}
+
+bool TitleBarButton::event(QEvent *event) {
+    switch (event->type()) {
+    case QEvent::Enter: {
+        auto animation = new QPropertyAnimation(this, "fader");
+        animation->setDuration(125);
+        animation->setEndValue(1.0);
+        animation->start(QAbstractAnimation::DeleteWhenStopped);
+        break;
+    }
+    case QEvent::Leave: {
+        auto animation = new QPropertyAnimation(this, "fader");
+        animation->setDuration(125);
+        animation->setEndValue(0.0);
+        animation->start(QAbstractAnimation::DeleteWhenStopped);
+        break;
+    }
+    default:
+        break;
+    }
+    return QPushButton::event(event);
+}
+
 void TitleBarButton::paintEvent([[maybe_unused]] QPaintEvent *event) {
     auto stylePainter = QStylePainter(this);
     auto styleOptionButton = QStyleOptionButton();
@@ -34,8 +67,14 @@ void TitleBarButton::paintEvent([[maybe_unused]] QPaintEvent *event) {
     styleOptionButton.icon = this->icon();
     styleOptionButton.iconSize = this->iconSize();
 
-    const auto hoverColor =
-        Utils::creatorTheme()->color(Utils::Theme::FancyToolButtonHoverColor);
+    const auto hoverColor = [this]() -> QColor {
+        auto col = this->m_role == Role::Close
+                       ? QColor(232, 17, 35, 229)
+                       : Utils::creatorTheme()->color(
+                             Utils::Theme::FancyToolButtonHoverColor);
+        col.setAlpha(static_cast<int>(this->m_fader * col.alpha()));
+        return col;
+    }();
     const bool isHovered = styleOptionButton.state & QStyle::State_MouseOver;
 
     switch (this->m_role) {
@@ -46,13 +85,6 @@ void TitleBarButton::paintEvent([[maybe_unused]] QPaintEvent *event) {
         if (isHovered) {
             styleOptionButton.icon =
                 QIcon(":/resources/chrome-minimize-dark.svg");
-
-            stylePainter.save();
-            stylePainter.setRenderHint(QPainter::Antialiasing, false);
-            stylePainter.setPen(Qt::NoPen);
-            stylePainter.setBrush(QBrush(QColor(hoverColor)));
-            stylePainter.drawRect(styleOptionButton.rect);
-            stylePainter.restore();
         }
         break;
     }
@@ -65,13 +97,6 @@ void TitleBarButton::paintEvent([[maybe_unused]] QPaintEvent *event) {
                 styleOptionButton.icon =
                     QIcon(":/resources/chrome-maximize-dark.svg");
             }
-
-            stylePainter.save();
-            stylePainter.setRenderHint(QPainter::Antialiasing, false);
-            stylePainter.setPen(Qt::NoPen);
-            stylePainter.setBrush(QBrush(QColor(hoverColor)));
-            stylePainter.drawRect(styleOptionButton.rect);
-            stylePainter.restore();
         }
         break;
     }
@@ -79,18 +104,15 @@ void TitleBarButton::paintEvent([[maybe_unused]] QPaintEvent *event) {
         if (isHovered) {
             styleOptionButton.icon =
                 QIcon(":/resources/chrome-close-light.svg");
-
-            stylePainter.save();
-            stylePainter.setRenderHint(QPainter::Antialiasing, false);
-            stylePainter.setPen(Qt::NoPen);
-            stylePainter.setBrush(QBrush(QColor(232, 17, 35, 229)));
-            stylePainter.drawRect(styleOptionButton.rect);
-            stylePainter.restore();
         }
         break;
     }
     }
 
+    stylePainter.setRenderHint(QPainter::Antialiasing, false);
+    stylePainter.setPen(Qt::NoPen);
+    stylePainter.setBrush(QBrush(hoverColor));
+    stylePainter.drawRect(styleOptionButton.rect);
     stylePainter.drawControl(QStyle::CE_PushButtonLabel, styleOptionButton);
 }
 

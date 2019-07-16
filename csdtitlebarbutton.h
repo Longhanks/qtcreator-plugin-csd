@@ -8,6 +8,7 @@ class TitleBar;
 
 class TitleBarButton : public QPushButton {
     Q_OBJECT
+    Q_PROPERTY(double fader READ fader WRITE setFader)
 
 public:
     enum Role { CaptionIcon, Minimize, MaximizeRestore, Close };
@@ -22,11 +23,16 @@ public:
                             Role role,
                             TitleBar *parent = nullptr);
 
+    double fader() const;
+    void setFader(double value);
+
 protected:
+    bool event(QEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
 
 private:
     Role m_role;
+    double m_fader = 0.0;
 };
 
 } // namespace CSD
