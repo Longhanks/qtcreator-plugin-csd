@@ -8,5 +8,6 @@
         <file>resources/chrome-maximize-dark-disabled.svg</file>
         <file>resources/chrome-minimize-dark-disabled.svg</file>
         <file>resources/chrome-restore-dark-disabled.svg</file>
+        <file>resources/chrome-close-light.svg</file>
     </qresource>
 </RCC>

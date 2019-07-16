@@ -2,11 +2,10 @@
 
 #include "csdtitlebar.h"
 
-#include <QStyle>
+#include <utils/theme/theme.h>
+
 #include <QStyleOption>
 #include <QStylePainter>
-#include <Qt>
-#include <qdrawutil.h>
 
 namespace CSD {
 
@@ -35,8 +34,8 @@ void TitleBarButton::paintEvent([[maybe_unused]] QPaintEvent *event) {
     styleOptionButton.icon = this->icon();
     styleOptionButton.iconSize = this->iconSize();
 
-    QBrush buttonBrush = styleOptionButton.palette.brush(QPalette::Button);
-    const auto hoverColor = QColor(171, 178, 191, 75);
+    const auto hoverColor =
+        Utils::creatorTheme()->color(Utils::Theme::FancyToolButtonHoverColor);
     const bool isHovered = styleOptionButton.state & QStyle::State_MouseOver;
 
     switch (this->m_role) {
@@ -44,29 +43,49 @@ void TitleBarButton::paintEvent([[maybe_unused]] QPaintEvent *event) {
         break;
     }
     case Role::Minimize: {
-        [[fallthrough]];
+        if (isHovered) {
+            styleOptionButton.icon =
+                QIcon(":/resources/chrome-minimize-dark.svg");
+
+            stylePainter.save();
+            stylePainter.setRenderHint(QPainter::Antialiasing, false);
+            stylePainter.setPen(Qt::NoPen);
+            stylePainter.setBrush(QBrush(QColor(hoverColor)));
+            stylePainter.drawRect(styleOptionButton.rect);
+            stylePainter.restore();
+        }
+        break;
     }
     case Role::MaximizeRestore: {
         if (isHovered) {
-            buttonBrush.setColor(hoverColor);
-            qDrawShadePanel(&stylePainter,
-                            styleOptionButton.rect,
-                            styleOptionButton.palette,
-                            false,
-                            0,
-                            &buttonBrush);
+            if (this->window()->windowState() & Qt::WindowMaximized) {
+                styleOptionButton.icon =
+                    QIcon(":/resources/chrome-restore-dark.svg");
+            } else {
+                styleOptionButton.icon =
+                    QIcon(":/resources/chrome-maximize-dark.svg");
+            }
+
+            stylePainter.save();
+            stylePainter.setRenderHint(QPainter::Antialiasing, false);
+            stylePainter.setPen(Qt::NoPen);
+            stylePainter.setBrush(QBrush(QColor(hoverColor)));
+            stylePainter.drawRect(styleOptionButton.rect);
+            stylePainter.restore();
         }
         break;
     }
     case Role::Close: {
         if (isHovered) {
-            buttonBrush.setColor(QColor::fromRgb(232, 17, 35, 229));
-            qDrawShadePanel(&stylePainter,
-                            styleOptionButton.rect,
-                            styleOptionButton.palette,
-                            false,
-                            0,
-                            &buttonBrush);
+            styleOptionButton.icon =
+                QIcon(":/resources/chrome-close-light.svg");
+
+            stylePainter.save();
+            stylePainter.setRenderHint(QPainter::Antialiasing, false);
+            stylePainter.setPen(Qt::NoPen);
+            stylePainter.setBrush(QBrush(QColor(232, 17, 35, 229)));
+            stylePainter.drawRect(styleOptionButton.rect);
+            stylePainter.restore();
         }
         break;
     }
