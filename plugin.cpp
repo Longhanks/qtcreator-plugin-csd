@@ -41,8 +41,6 @@ bool CSDPlugin::initialize([[maybe_unused]] const QStringList &arguments,
     this->m_titleBar = new TitleBar(mainWindow->centralWidget());
     wrapperLayout->insertWidget(0, this->m_titleBar);
 
-    this->m_titleBar->setActiveColor(QColor(40, 44, 52));
-
     connect(
         this->m_titleBar, &TitleBar::minimizeClicked, this, [mainWindow]() {
             mainWindow->setWindowState(mainWindow->windowState() |

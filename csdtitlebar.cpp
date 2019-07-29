@@ -2,16 +2,15 @@
 
 #include "csdtitlebarbutton.h"
 
-#include <coreplugin/coreicons.h>
-#include <coreplugin/icore.h>
-
 #ifdef _WIN32
 #include <Windows.h>
 #include <dwmapi.h>
 #endif
 
+#include <QApplication>
 #include <QBoxLayout>
 #include <QEvent>
+#include <QMainWindow>
 #include <QMenuBar>
 #include <QPainter>
 #include <QStyleOption>
@@ -48,10 +47,10 @@ TitleBar::TitleBar(QWidget *parent) : QWidget(parent) {
     this->m_activeColor = [this]() -> QColor {
 #ifdef _WIN32
         auto maybeColor = this->readDWMColorizationColor();
-        return maybeColor.value_or(Qt::black);
+        return maybeColor.value_or(QColor(40, 44, 52));
 #else
         Q_UNUSED(this)
-        return Qt::black;
+        return QColor(40, 44, 52);
 #endif
     }();
 
@@ -78,12 +77,40 @@ TitleBar::TitleBar(QWidget *parent) : QWidget(parent) {
     int icon_size = 16;
 #endif
     this->m_buttonCaptionIcon->setIconSize(QSize(icon_size, icon_size));
-    this->m_buttonCaptionIcon->setIcon(Core::Icons::QTCREATORLOGO_BIG.icon());
+    const auto icon = [this]() -> QIcon {
+        auto globalWindowIcon = this->window()->windowIcon();
+        if (!globalWindowIcon.isNull()) {
+            return globalWindowIcon;
+        }
+        globalWindowIcon = QApplication::windowIcon();
+        if (!globalWindowIcon.isNull()) {
+            return globalWindowIcon;
+        }
+#ifdef _WIN32
+        // Use system default application icon which doesn't need margin
+        this->m_horizontalLayout->takeAt(
+            this->m_horizontalLayout->indexOf(this->m_leftMargin));
+        this->m_leftMargin->setParent(nullptr);
+        HICON winIcon = ::LoadIconW(nullptr, IDI_APPLICATION);
+        globalWindowIcon.addPixmap(QtWin::fromHICON(winIcon));
+#else
+#if !defined(__APPLE__)
+        if (globalWindowIcon.isNull()) {
+            globalWindowIcon = QIcon::fromTheme("application-x-executable");
+        }
+#endif
+#endif
+        return globalWindowIcon;
+    }();
+    this->m_buttonCaptionIcon->setIcon(icon);
     this->m_horizontalLayout->addWidget(this->m_buttonCaptionIcon);
 
-    this->m_menuBar = Core::ICore::mainWindow()->menuBar();
-    this->m_horizontalLayout->addWidget(this->m_menuBar);
-    this->m_menuBar->setFixedHeight(30);
+    auto *mainWindow = qobject_cast<QMainWindow *>(this->window());
+    if (mainWindow != nullptr) {
+        this->m_menuBar = mainWindow->menuBar();
+        this->m_horizontalLayout->addWidget(this->m_menuBar);
+        this->m_menuBar->setFixedHeight(30);
+    }
 
     auto *emptySpace = new QWidget(this);
     emptySpace->setAttribute(Qt::WA_TransparentForMouseEvents);
@@ -158,7 +185,10 @@ std::optional<QColor> TitleBar::readDWMColorizationColor() {
 #endif
 
 TitleBar::~TitleBar() {
-    Core::ICore::mainWindow()->setMenuBar(this->m_menuBar);
+    auto *mainWindow = qobject_cast<QMainWindow *>(this->window());
+    if (mainWindow != nullptr) {
+        mainWindow->setMenuBar(this->m_menuBar);
+    }
     this->m_menuBar = nullptr;
 }
 
