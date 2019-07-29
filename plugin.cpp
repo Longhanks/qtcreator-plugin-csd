@@ -5,6 +5,8 @@
 
 #include <coreplugin/icore.h>
 
+#include <utils/theme/theme.h>
+
 #include <QApplication>
 #include <QBoxLayout>
 #include <QMenuBar>
@@ -39,6 +41,8 @@ bool CSDPlugin::initialize([[maybe_unused]] const QStringList &arguments,
     auto wrapperLayout =
         static_cast<QVBoxLayout *>(mainWindow->centralWidget()->layout());
     this->m_titleBar = new TitleBar(mainWindow->centralWidget());
+    m_titleBar->setHoverColor(
+        Utils::creatorTheme()->color(Utils::Theme::FancyToolButtonHoverColor));
     wrapperLayout->insertWidget(0, this->m_titleBar);
 
     connect(

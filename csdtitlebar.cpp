@@ -358,6 +358,16 @@ void TitleBar::setActiveColor(const QColor &activeColor) {
     this->update();
 }
 
+QColor TitleBar::hoverColor() const {
+    return this->m_hoverColor;
+}
+
+void TitleBar::setHoverColor(QColor hoverColor) {
+    this->m_hoverColor = std::move(hoverColor);
+    this->m_buttonMinimize->setHoverColor(this->m_hoverColor);
+    this->m_buttonMaximizeRestore->setHoverColor(this->m_hoverColor);
+}
+
 void TitleBar::onWindowStateChange(Qt::WindowStates state) {
     this->setActive(this->window()->isActiveWindow());
     this->setMaximized(static_cast<bool>(state & Qt::WindowMaximized));

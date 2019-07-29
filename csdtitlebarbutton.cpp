@@ -2,8 +2,6 @@
 
 #include "csdtitlebar.h"
 
-#include <utils/theme/theme.h>
-
 #include <QEvent>
 #include <QPropertyAnimation>
 #include <QStyleOption>
@@ -34,6 +32,14 @@ double TitleBarButton::fader() const {
 void TitleBarButton::setFader(double value) {
     this->m_fader = value;
     this->update();
+}
+
+QColor TitleBarButton::hoverColor() const {
+    return this->m_hoverColor;
+}
+
+void TitleBarButton::setHoverColor(QColor hoverColor) {
+    this->m_hoverColor = std::move(hoverColor);
 }
 
 bool TitleBarButton::event(QEvent *event) {
@@ -68,11 +74,12 @@ void TitleBarButton::paintEvent([[maybe_unused]] QPaintEvent *event) {
     styleOptionButton.iconSize = this->iconSize();
 
     const auto hoverColor = [this]() -> QColor {
-        auto col = this->m_role == Role::Close
-                       ? QColor(232, 17, 35, 229)
-                       : Utils::creatorTheme()->color(
-                             Utils::Theme::FancyToolButtonHoverColor);
+        auto col = this->m_role == Role::Close ? QColor(232, 17, 35, 229)
+                                               : this->m_hoverColor;
         col.setAlpha(static_cast<int>(this->m_fader * col.alpha()));
+        if (this->m_role == Role::CaptionIcon) {
+            col.setAlpha(0);
+        }
         return col;
     }();
     const bool isHovered = styleOptionButton.state & QStyle::State_MouseOver;

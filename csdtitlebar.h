@@ -26,6 +26,7 @@ private:
     bool m_active = false;
     bool m_maximized = false;
     QColor m_activeColor;
+    QColor m_hoverColor = QColor(62, 68, 81);
     QHBoxLayout *m_horizontalLayout;
     QMenuBar *m_menuBar;
     QWidget *m_leftMargin;
@@ -52,6 +53,8 @@ public:
     void setMaximizable(bool on);
     QColor activeColor();
     void setActiveColor(const QColor &activeColor);
+    QColor hoverColor() const;
+    void setHoverColor(QColor hoverColor);
     void onWindowStateChange(Qt::WindowStates state);
     bool hovered() const;
 

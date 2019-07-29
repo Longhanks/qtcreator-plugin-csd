@@ -25,6 +25,8 @@ public:
 
     double fader() const;
     void setFader(double value);
+    QColor hoverColor() const;
+    void setHoverColor(QColor hoverColor);
 
 protected:
     bool event(QEvent *event) override;
@@ -33,6 +35,7 @@ protected:
 private:
     Role m_role;
     double m_fader = 0.0;
+    QColor m_hoverColor = QColor(62, 68, 81);
 };
 
 } // namespace CSD
