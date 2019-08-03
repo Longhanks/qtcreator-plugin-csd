@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QColor>
+#include <QIcon>
 #include <QWidget>
 
 #include <optional>
@@ -42,7 +43,8 @@ protected:
     void paintEvent(QPaintEvent *event) override;
 
 public:
-    explicit TitleBar(QWidget *parent = nullptr);
+    explicit TitleBar(const QIcon &captionIcon = QIcon(),
+                      QWidget *parent = nullptr);
     ~TitleBar() override;
 
     bool isActive() const;

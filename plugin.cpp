@@ -3,6 +3,7 @@
 #include "csdtitlebar.h"
 #include "csdtitlebarbutton.h"
 
+#include <coreplugin/coreicons.h>
 #include <coreplugin/icore.h>
 
 #include <utils/theme/theme.h>
@@ -37,12 +38,14 @@ CSDPlugin::~CSDPlugin() {
 bool CSDPlugin::initialize([[maybe_unused]] const QStringList &arguments,
                            [[maybe_unused]] QString *errorString) {
     QMainWindow *mainWindow = Core::ICore::mainWindow();
-
     auto wrapperLayout =
         static_cast<QVBoxLayout *>(mainWindow->centralWidget()->layout());
-    this->m_titleBar = new TitleBar(mainWindow->centralWidget());
-    m_titleBar->setHoverColor(
+
+    this->m_titleBar = new TitleBar(Core::Icons::QTCREATORLOGO_BIG.icon(),
+                                    mainWindow->centralWidget());
+    this->m_titleBar->setHoverColor(
         Utils::creatorTheme()->color(Utils::Theme::FancyToolButtonHoverColor));
+    this->m_titleBar->setActiveColor(QColor(40, 44, 52));
     wrapperLayout->insertWidget(0, this->m_titleBar);
 
     connect(

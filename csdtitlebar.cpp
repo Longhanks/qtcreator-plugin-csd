@@ -3,6 +3,8 @@
 #include "csdtitlebarbutton.h"
 
 #ifdef _WIN32
+#include "qtwinbackports.h"
+
 #include <Windows.h>
 #include <dwmapi.h>
 #endif
@@ -40,7 +42,8 @@ static QWidget *titleBarTopLevelWidget(QWidget *w) {
 }
 #endif
 
-TitleBar::TitleBar(QWidget *parent) : QWidget(parent) {
+TitleBar::TitleBar(const QIcon &captionIcon, QWidget *parent)
+    : QWidget(parent) {
     this->setObjectName("TitleBar");
     this->setMinimumSize(QSize(0, 30));
     this->setMaximumSize(QSize(QWIDGETSIZE_MAX, 30));
@@ -77,7 +80,10 @@ TitleBar::TitleBar(QWidget *parent) : QWidget(parent) {
     int icon_size = 16;
 #endif
     this->m_buttonCaptionIcon->setIconSize(QSize(icon_size, icon_size));
-    const auto icon = [this]() -> QIcon {
+    const auto icon = [&captionIcon, this]() -> QIcon {
+        if (!captionIcon.isNull()) {
+            return captionIcon;
+        }
         auto globalWindowIcon = this->window()->windowIcon();
         if (!globalWindowIcon.isNull()) {
             return globalWindowIcon;
@@ -92,7 +98,8 @@ TitleBar::TitleBar(QWidget *parent) : QWidget(parent) {
             this->m_horizontalLayout->indexOf(this->m_leftMargin));
         this->m_leftMargin->setParent(nullptr);
         HICON winIcon = ::LoadIconW(nullptr, IDI_APPLICATION);
-        globalWindowIcon.addPixmap(QtWin::fromHICON(winIcon));
+        globalWindowIcon.addPixmap(
+            QtWinBackports::qt_pixmapFromWinHICON(winIcon));
 #else
 #if !defined(__APPLE__)
         if (globalWindowIcon.isNull()) {

@@ -156,7 +156,7 @@ else ()
     set(QTGUI_LIB "${Qt5Gui_LIBRARIES}")
     set(QTCORE_LIB "${Qt5Core_LIBRARIES}")
 
-    target_sources(${PROJECT_NAME} PRIVATE win32csd.cpp)
+    target_sources(${PROJECT_NAME} PRIVATE qtwinbackports.cpp win32csd.cpp)
 
     target_compile_definitions(${PROJECT_NAME} PUBLIC WIN32_LEAN_AND_MEAN)
     target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
