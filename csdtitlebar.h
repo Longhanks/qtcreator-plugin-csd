@@ -32,6 +32,12 @@ private:
     QMenuBar *m_menuBar;
     QWidget *m_leftMargin;
     TitleBarButton *m_buttonCaptionIcon;
+    TitleBarButton *m_buttonModeWelcome;
+    TitleBarButton *m_buttonModeEdit;
+    TitleBarButton *m_buttonModeDesign;
+    TitleBarButton *m_buttonModeDebug;
+    TitleBarButton *m_buttonModeProjects;
+    TitleBarButton *m_buttonModeHelp;
     TitleBarButton *m_buttonMinimize;
     TitleBarButton *m_buttonMaximizeRestore;
     TitleBarButton *m_buttonClose;
@@ -64,6 +70,9 @@ signals:
     void minimizeClicked();
     void maximizeRestoreClicked();
     void closeClicked();
+
+private:
+    void resetModeButtonCheckedStates();
 };
 
 } // namespace CSD

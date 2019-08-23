@@ -11,7 +11,7 @@ class TitleBarButton : public QPushButton {
     Q_PROPERTY(double fader READ fader WRITE setFader)
 
 public:
-    enum Role { CaptionIcon, Minimize, MaximizeRestore, Close };
+    enum Role { CaptionIcon, Minimize, MaximizeRestore, Close, Tool };
     Q_ENUM(Role)
 
     explicit TitleBarButton(Role role, TitleBar *parent = nullptr);

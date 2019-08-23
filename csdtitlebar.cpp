@@ -2,6 +2,14 @@
 
 #include "csdtitlebarbutton.h"
 
+#include <coreplugin/coreconstants.h>
+#include <coreplugin/coreicons.h>
+#include <coreplugin/icore.h>
+#include <coreplugin/modemanager.h>
+#include <debugger/debuggerconstants.h>
+#include <help/helpconstants.h>
+#include <projectexplorer/projectexplorerconstants.h>
+
 #ifdef _WIN32
 #include "qtwinbackports.h"
 
@@ -122,6 +130,71 @@ TitleBar::TitleBar(const QIcon &captionIcon, QWidget *parent)
     auto *emptySpace = new QWidget(this);
     emptySpace->setAttribute(Qt::WA_TransparentForMouseEvents);
     this->m_horizontalLayout->addWidget(emptySpace, 1);
+
+    this->m_buttonModeWelcome = new TitleBarButton(TitleBarButton::Tool, this);
+    this->m_buttonModeWelcome->setObjectName("ButtonModeWelcome");
+    this->m_buttonModeWelcome->setMinimumSize(QSize(30, 30));
+    this->m_buttonModeWelcome->setMaximumSize(QSize(30, 30));
+    this->m_buttonModeWelcome->setText("W");
+    this->m_horizontalLayout->addWidget(this->m_buttonModeWelcome);
+
+    this->m_buttonModeEdit = new TitleBarButton(TitleBarButton::Tool, this);
+    this->m_buttonModeEdit->setObjectName("ButtonModeEdit");
+    this->m_buttonModeEdit->setMinimumSize(QSize(30, 30));
+    this->m_buttonModeEdit->setMaximumSize(QSize(30, 30));
+    this->m_buttonModeEdit->setText("E");
+    this->m_horizontalLayout->addWidget(this->m_buttonModeEdit);
+
+    this->m_buttonModeDesign = new TitleBarButton(TitleBarButton::Tool, this);
+    this->m_buttonModeDesign->setObjectName("ButtonModeDesign");
+    this->m_buttonModeDesign->setMinimumSize(QSize(30, 30));
+    this->m_buttonModeDesign->setMaximumSize(QSize(30, 30));
+    this->m_buttonModeDesign->setText("D");
+    this->m_horizontalLayout->addWidget(this->m_buttonModeDesign);
+
+    this->m_buttonModeDebug = new TitleBarButton(TitleBarButton::Tool, this);
+    this->m_buttonModeDebug->setObjectName("ButtonModeDebug");
+    this->m_buttonModeDebug->setMinimumSize(QSize(30, 30));
+    this->m_buttonModeDebug->setMaximumSize(QSize(30, 30));
+    this->m_buttonModeDebug->setText("D");
+    this->m_horizontalLayout->addWidget(this->m_buttonModeDebug);
+
+    this->m_buttonModeProjects =
+        new TitleBarButton(TitleBarButton::Tool, this);
+    this->m_buttonModeProjects->setObjectName("ButtonModeProjects");
+    this->m_buttonModeProjects->setMinimumSize(QSize(30, 30));
+    this->m_buttonModeProjects->setMaximumSize(QSize(30, 30));
+    this->m_buttonModeProjects->setText("P");
+    this->m_horizontalLayout->addWidget(this->m_buttonModeProjects);
+
+    this->m_buttonModeHelp = new TitleBarButton(TitleBarButton::Tool, this);
+    this->m_buttonModeHelp->setObjectName("ButtonModeHelp");
+    this->m_buttonModeHelp->setMinimumSize(QSize(30, 30));
+    this->m_buttonModeHelp->setMaximumSize(QSize(30, 30));
+    this->m_buttonModeHelp->setText("H");
+    this->m_horizontalLayout->addWidget(this->m_buttonModeHelp);
+
+    auto *modeManager = Core::ModeManager::instance();
+    QObject::connect(modeManager,
+                     &Core::ModeManager::currentModeChanged,
+                     this,
+                     [this](Core::Id mode, [[maybe_unused]] Core::Id oldMode) {
+                         this->resetModeButtonCheckedStates();
+                         if (mode == Core::Constants::MODE_WELCOME) {
+                             this->m_buttonModeWelcome->setDown(true);
+                         } else if (mode == Core::Constants::MODE_EDIT) {
+                             this->m_buttonModeEdit->setDown(true);
+                         } else if (mode == Core::Constants::MODE_DESIGN) {
+                             this->m_buttonModeDesign->setDown(true);
+                         } else if (mode == Debugger::Constants::MODE_DEBUG) {
+                             this->m_buttonModeDebug->setDown(true);
+                         } else if (mode ==
+                                    ProjectExplorer::Constants::MODE_SESSION) {
+                             this->m_buttonModeProjects->setDown(true);
+                         } else if (mode == Help::Constants::ID_MODE_HELP) {
+                             this->m_buttonModeHelp->setDown(true);
+                         }
+                     });
 
     this->m_buttonMinimize =
         new TitleBarButton(TitleBarButton::Minimize, this);
@@ -399,6 +472,15 @@ bool TitleBar::hovered() const {
         }
     }
     return true;
+}
+
+void TitleBar::resetModeButtonCheckedStates() {
+    this->m_buttonModeWelcome->setDown(false);
+    this->m_buttonModeEdit->setDown(false);
+    this->m_buttonModeDesign->setDown(false);
+    this->m_buttonModeDebug->setDown(false);
+    this->m_buttonModeProjects->setDown(false);
+    this->m_buttonModeHelp->setDown(false);
 }
 
 } // namespace CSD

@@ -43,6 +43,9 @@ void TitleBarButton::setHoverColor(QColor hoverColor) {
 }
 
 bool TitleBarButton::event(QEvent *event) {
+    if (this->isDown()) {
+        return QPushButton::event(event);
+    }
     switch (event->type()) {
     case QEvent::Enter: {
         auto animation = new QPropertyAnimation(this, "fader");
@@ -76,13 +79,16 @@ void TitleBarButton::paintEvent([[maybe_unused]] QPaintEvent *event) {
     const auto hoverColor = [this]() -> QColor {
         auto col = this->m_role == Role::Close ? QColor(232, 17, 35, 229)
                                                : this->m_hoverColor;
-        col.setAlpha(static_cast<int>(this->m_fader * col.alpha()));
+        if (!this->isDown()) {
+            col.setAlpha(static_cast<int>(this->m_fader * col.alpha()));
+        }
         if (this->m_role == Role::CaptionIcon) {
             col.setAlpha(0);
         }
         return col;
     }();
-    const bool isHovered = styleOptionButton.state & QStyle::State_MouseOver;
+    const bool isHovered =
+        styleOptionButton.state & QStyle::State_MouseOver || this->isDown();
 
     switch (this->m_role) {
     case Role::CaptionIcon: {
@@ -112,6 +118,9 @@ void TitleBarButton::paintEvent([[maybe_unused]] QPaintEvent *event) {
             styleOptionButton.icon =
                 QIcon(":/resources/chrome-close-light.svg");
         }
+        break;
+    }
+    case Role::Tool: {
         break;
     }
     }
