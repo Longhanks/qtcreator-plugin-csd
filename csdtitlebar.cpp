@@ -178,21 +178,21 @@ TitleBar::TitleBar(const QIcon &captionIcon, QWidget *parent)
     QObject::connect(modeManager,
                      &Core::ModeManager::currentModeChanged,
                      this,
-                     [this](Core::Id mode, [[maybe_unused]] Core::Id oldMode) {
-                         this->resetModeButtonCheckedStates();
+                     [this](Core::Id mode, Core::Id) {
+                         this->resetModeButtonStates();
                          if (mode == Core::Constants::MODE_WELCOME) {
-                             this->m_buttonModeWelcome->setDown(true);
+                             this->m_buttonModeWelcome->setKeepDown(true);
                          } else if (mode == Core::Constants::MODE_EDIT) {
-                             this->m_buttonModeEdit->setDown(true);
+                             this->m_buttonModeEdit->setKeepDown(true);
                          } else if (mode == Core::Constants::MODE_DESIGN) {
-                             this->m_buttonModeDesign->setDown(true);
+                             this->m_buttonModeDesign->setKeepDown(true);
                          } else if (mode == Debugger::Constants::MODE_DEBUG) {
-                             this->m_buttonModeDebug->setDown(true);
+                             this->m_buttonModeDebug->setKeepDown(true);
                          } else if (mode ==
                                     ProjectExplorer::Constants::MODE_SESSION) {
-                             this->m_buttonModeProjects->setDown(true);
+                             this->m_buttonModeProjects->setKeepDown(true);
                          } else if (mode == Help::Constants::ID_MODE_HELP) {
-                             this->m_buttonModeHelp->setDown(true);
+                             this->m_buttonModeHelp->setKeepDown(true);
                          }
                      });
 
@@ -474,13 +474,13 @@ bool TitleBar::hovered() const {
     return true;
 }
 
-void TitleBar::resetModeButtonCheckedStates() {
-    this->m_buttonModeWelcome->setDown(false);
-    this->m_buttonModeEdit->setDown(false);
-    this->m_buttonModeDesign->setDown(false);
-    this->m_buttonModeDebug->setDown(false);
-    this->m_buttonModeProjects->setDown(false);
-    this->m_buttonModeHelp->setDown(false);
+void TitleBar::resetModeButtonStates() {
+    this->m_buttonModeWelcome->setKeepDown(false);
+    this->m_buttonModeEdit->setKeepDown(false);
+    this->m_buttonModeDesign->setKeepDown(false);
+    this->m_buttonModeDebug->setKeepDown(false);
+    this->m_buttonModeProjects->setKeepDown(false);
+    this->m_buttonModeHelp->setKeepDown(false);
 }
 
 } // namespace CSD

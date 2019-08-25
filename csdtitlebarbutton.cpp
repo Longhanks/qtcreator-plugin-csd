@@ -42,6 +42,15 @@ void TitleBarButton::setHoverColor(QColor hoverColor) {
     this->m_hoverColor = std::move(hoverColor);
 }
 
+bool TitleBarButton::keepDown() const {
+    return this->m_keepDown;
+}
+
+void TitleBarButton::setKeepDown(bool keepDown) {
+    this->m_keepDown = keepDown;
+    this->update();
+}
+
 bool TitleBarButton::event(QEvent *event) {
     if (this->isDown()) {
         return QPushButton::event(event);
@@ -79,7 +88,7 @@ void TitleBarButton::paintEvent([[maybe_unused]] QPaintEvent *event) {
     const auto hoverColor = [this]() -> QColor {
         auto col = this->m_role == Role::Close ? QColor(232, 17, 35, 229)
                                                : this->m_hoverColor;
-        if (!this->isDown()) {
+        if (!this->m_keepDown) {
             col.setAlpha(static_cast<int>(this->m_fader * col.alpha()));
         }
         if (this->m_role == Role::CaptionIcon) {
@@ -87,8 +96,7 @@ void TitleBarButton::paintEvent([[maybe_unused]] QPaintEvent *event) {
         }
         return col;
     }();
-    const bool isHovered =
-        styleOptionButton.state & QStyle::State_MouseOver || this->isDown();
+    const bool isHovered = styleOptionButton.state & QStyle::State_MouseOver;
 
     switch (this->m_role) {
     case Role::CaptionIcon: {

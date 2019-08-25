@@ -72,7 +72,7 @@ signals:
     void closeClicked();
 
 private:
-    void resetModeButtonCheckedStates();
+    void resetModeButtonStates();
 };
 
 } // namespace CSD
