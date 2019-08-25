@@ -11,7 +11,9 @@
 #include <help/helpconstants.h>
 #include <projectexplorer/project.h>
 #include <projectexplorer/projectexplorerconstants.h>
+#include <projectexplorer/projectexplorericons.h>
 #include <projectexplorer/session.h>
+#include <utils/stylehelper.h>
 
 #ifdef _WIN32
 #include "qtwinbackports.h"
@@ -139,29 +141,45 @@ TitleBar::TitleBar(const QIcon &captionIcon, QWidget *parent)
     this->m_buttonModeWelcome->setObjectName("ButtonModeWelcome");
     this->m_buttonModeWelcome->setMinimumSize(QSize(30, 30));
     this->m_buttonModeWelcome->setMaximumSize(QSize(30, 30));
-    this->m_buttonModeWelcome->setText("W");
+    this->m_buttonModeWelcome->setIcon(
+        Utils::Icon::modeIcon({":/welcome/images/mode_welcome.png"},
+                              {{":/welcome/images/mode_welcome_mask.png",
+                                Utils::Theme::IconsBaseColor}},
+                              {{":/welcome/images/mode_welcome_mask.png",
+                                Utils::Theme::IconsModeWelcomeActiveColor}}));
     this->m_horizontalLayout->addWidget(this->m_buttonModeWelcome);
 
     this->m_buttonModeEdit = new TitleBarButton(TitleBarButton::Tool, this);
     this->m_buttonModeEdit->setObjectName("ButtonModeEdit");
     this->m_buttonModeEdit->setMinimumSize(QSize(30, 30));
     this->m_buttonModeEdit->setMaximumSize(QSize(30, 30));
-    this->m_buttonModeEdit->setText("E");
+    this->m_buttonModeEdit->setIcon(
+        Utils::Icon::modeIcon(Core::Icons::MODE_EDIT_CLASSIC,
+                              Core::Icons::MODE_EDIT_FLAT,
+                              Core::Icons::MODE_EDIT_FLAT_ACTIVE));
     this->m_horizontalLayout->addWidget(this->m_buttonModeEdit);
 
     this->m_buttonModeDesign = new TitleBarButton(TitleBarButton::Tool, this);
     this->m_buttonModeDesign->setObjectName("ButtonModeDesign");
     this->m_buttonModeDesign->setMinimumSize(QSize(30, 30));
     this->m_buttonModeDesign->setMaximumSize(QSize(30, 30));
-    this->m_buttonModeDesign->setText("D");
     this->m_buttonModeDesign->setEnabled(false);
+    this->m_buttonModeDesign->setIcon(
+        Utils::Icon::modeIcon(Core::Icons::MODE_DESIGN_CLASSIC,
+                              Core::Icons::MODE_DESIGN_FLAT,
+                              Core::Icons::MODE_DESIGN_FLAT_ACTIVE));
     this->m_horizontalLayout->addWidget(this->m_buttonModeDesign);
 
     this->m_buttonModeDebug = new TitleBarButton(TitleBarButton::Tool, this);
     this->m_buttonModeDebug->setObjectName("ButtonModeDebug");
     this->m_buttonModeDebug->setMinimumSize(QSize(30, 30));
     this->m_buttonModeDebug->setMaximumSize(QSize(30, 30));
-    this->m_buttonModeDebug->setText("D");
+    this->m_buttonModeDebug->setIcon(
+        Utils::Icon::modeIcon({":/debugger/images/mode_debug.png"},
+                              {{":/debugger/images/mode_debug_mask.png",
+                                Utils::Theme::IconsBaseColor}},
+                              {{":/debugger/images/mode_debug_mask.png",
+                                Utils::Theme::IconsModeDebugActiveColor}}));
     this->m_horizontalLayout->addWidget(this->m_buttonModeDebug);
 
     this->m_buttonModeProjects =
@@ -169,14 +187,22 @@ TitleBar::TitleBar(const QIcon &captionIcon, QWidget *parent)
     this->m_buttonModeProjects->setObjectName("ButtonModeProjects");
     this->m_buttonModeProjects->setMinimumSize(QSize(30, 30));
     this->m_buttonModeProjects->setMaximumSize(QSize(30, 30));
-    this->m_buttonModeProjects->setText("P");
+    this->m_buttonModeProjects->setIcon(Utils::Icon::modeIcon(
+        ProjectExplorer::Icons::MODE_PROJECT_CLASSIC,
+        ProjectExplorer::Icons::MODE_PROJECT_FLAT,
+        ProjectExplorer::Icons::MODE_PROJECT_FLAT_ACTIVE));
     this->m_horizontalLayout->addWidget(this->m_buttonModeProjects);
 
     this->m_buttonModeHelp = new TitleBarButton(TitleBarButton::Tool, this);
     this->m_buttonModeHelp->setObjectName("ButtonModeHelp");
     this->m_buttonModeHelp->setMinimumSize(QSize(30, 30));
     this->m_buttonModeHelp->setMaximumSize(QSize(30, 30));
-    this->m_buttonModeHelp->setText("H");
+    this->m_buttonModeHelp->setIcon(Utils::Icon::modeIcon(
+        {":/help/images/mode_help.png"},
+        {{QLatin1String(":/help/images/mode_help_mask.png"),
+          Utils::Theme::IconsBaseColor}},
+        {{QLatin1String(":/help/images/mode_help_mask.png"),
+          Utils::Theme::IconsModeHelpActiveColor}}));
     this->m_horizontalLayout->addWidget(this->m_buttonModeHelp);
 
     QObject::connect(Core::ModeManager::instance(),

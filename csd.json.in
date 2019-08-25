@@ -13,6 +13,7 @@
         { "Name" : "Debugger", "Version" : "${QTCREATOR_VERSION}" },
         { "Name" : "Help", "Version" : "${QTCREATOR_VERSION}" },
         { "Name" : "ProjectExplorer", "Version" : "${QTCREATOR_VERSION}" },
+        { "Name" : "Welcome", "Version" : "${QTCREATOR_VERSION}" },
         { "Name" : "onedark", "Version" : "0.1.0" },
         { "Name" : "layoutsupport", "Version" : "0.1.0" }
     ]

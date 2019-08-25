@@ -2,6 +2,9 @@
 
 #include "csdtitlebar.h"
 
+#include <utils/icon.h>
+#include <utils/stylehelper.h>
+
 #include <QEvent>
 #include <QPropertyAnimation>
 #include <QStyleOption>
@@ -82,7 +85,8 @@ void TitleBarButton::paintEvent([[maybe_unused]] QPaintEvent *event) {
     styleOptionButton.initFrom(this);
     styleOptionButton.features = QStyleOptionButton::None;
     styleOptionButton.text = this->text();
-    styleOptionButton.icon = this->icon();
+    styleOptionButton.icon =
+        this->m_role == Role::Tool ? QIcon() : this->icon();
     styleOptionButton.iconSize = this->iconSize();
 
     const auto hoverColor = [this]() -> QColor {
@@ -138,6 +142,26 @@ void TitleBarButton::paintEvent([[maybe_unused]] QPaintEvent *event) {
     stylePainter.setBrush(QBrush(hoverColor));
     stylePainter.drawRect(styleOptionButton.rect);
     stylePainter.drawControl(QStyle::CE_PushButtonLabel, styleOptionButton);
+
+    if (this->m_role == Role::Tool) {
+        const QIcon::Mode iconMode =
+            this->isEnabled()
+                ? ((this->m_keepDown) ? QIcon::Active : QIcon::Normal)
+                : QIcon::Disabled;
+        QRect iconRect(0, 0, this->width(), this->height());
+        iconRect.moveCenter(this->rect().center());
+        Utils::StyleHelper::drawIconWithShadow(
+            this->icon(), iconRect, &stylePainter, iconMode);
+
+        if (this->m_keepDown) {
+            stylePainter.setOpacity(1.0);
+            QRect accentRect = this->rect();
+            accentRect.setHeight(1);
+            stylePainter.fillRect(
+                accentRect,
+                Utils::creatorTheme()->color(Utils::Theme::IconsBaseColor));
+        }
+    }
 }
 
 } // namespace CSD
