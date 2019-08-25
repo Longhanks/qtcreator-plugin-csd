@@ -4,11 +4,14 @@
 
 #include <coreplugin/coreconstants.h>
 #include <coreplugin/coreicons.h>
+#include <coreplugin/designmode.h>
 #include <coreplugin/icore.h>
 #include <coreplugin/modemanager.h>
 #include <debugger/debuggerconstants.h>
 #include <help/helpconstants.h>
+#include <projectexplorer/project.h>
 #include <projectexplorer/projectexplorerconstants.h>
+#include <projectexplorer/session.h>
 
 #ifdef _WIN32
 #include "qtwinbackports.h"
@@ -24,6 +27,7 @@
 #include <QMenuBar>
 #include <QPainter>
 #include <QStyleOption>
+#include <QTimer>
 
 #if !defined(_WIN32) && !defined(__APPLE__)
 #include <QMouseEvent>
@@ -150,6 +154,7 @@ TitleBar::TitleBar(const QIcon &captionIcon, QWidget *parent)
     this->m_buttonModeDesign->setMinimumSize(QSize(30, 30));
     this->m_buttonModeDesign->setMaximumSize(QSize(30, 30));
     this->m_buttonModeDesign->setText("D");
+    this->m_buttonModeDesign->setEnabled(false);
     this->m_horizontalLayout->addWidget(this->m_buttonModeDesign);
 
     this->m_buttonModeDebug = new TitleBarButton(TitleBarButton::Tool, this);
@@ -174,8 +179,7 @@ TitleBar::TitleBar(const QIcon &captionIcon, QWidget *parent)
     this->m_buttonModeHelp->setText("H");
     this->m_horizontalLayout->addWidget(this->m_buttonModeHelp);
 
-    auto *modeManager = Core::ModeManager::instance();
-    QObject::connect(modeManager,
+    QObject::connect(Core::ModeManager::instance(),
                      &Core::ModeManager::currentModeChanged,
                      this,
                      [this](Core::Id mode, Core::Id) {
@@ -195,6 +199,31 @@ TitleBar::TitleBar(const QIcon &captionIcon, QWidget *parent)
                              this->m_buttonModeHelp->setKeepDown(true);
                          }
                      });
+
+    QObject::connect(ProjectExplorer::SessionManager::instance(),
+                     &ProjectExplorer::SessionManager::projectAdded,
+                     this,
+                     [this](ProjectExplorer::Project *) {
+                         this->m_buttonModeProjects->setEnabled(true);
+                     });
+
+    QObject::connect(
+        ProjectExplorer::SessionManager::instance(),
+        &ProjectExplorer::SessionManager::projectRemoved,
+        this,
+        [this](ProjectExplorer::Project *) {
+            this->m_buttonModeProjects->setEnabled(
+                ProjectExplorer::SessionManager::instance()->hasProjects());
+        });
+
+    QTimer::singleShot(0, this, [this]() {
+        QObject::connect(Core::DesignMode::instance(),
+                         &Core::IMode::enabledStateChanged,
+                         this,
+                         [this](bool enabled) {
+                             this->m_buttonModeDesign->setEnabled(enabled);
+                         });
+    });
 
     this->m_buttonMinimize =
         new TitleBarButton(TitleBarButton::Minimize, this);

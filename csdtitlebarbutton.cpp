@@ -91,7 +91,7 @@ void TitleBarButton::paintEvent([[maybe_unused]] QPaintEvent *event) {
         if (!this->m_keepDown) {
             col.setAlpha(static_cast<int>(this->m_fader * col.alpha()));
         }
-        if (this->m_role == Role::CaptionIcon) {
+        if (!this->isEnabled() || this->m_role == Role::CaptionIcon) {
             col.setAlpha(0);
         }
         return col;

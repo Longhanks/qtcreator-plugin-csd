@@ -126,6 +126,7 @@ target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
 if (APPLE)
     find_library(CORE_LIB NAMES Core PATHS "${QTCREATOR_BIN_DIR}/../PlugIns")
     find_library(EXTENSIONSYSTEM_LIB NAMES ExtensionSystem PATHS "${QTCREATOR_BIN_DIR}/../Frameworks")
+    find_library(PROJECTEXPLORER_LIB NAMES ProjectExplorer PATHS "${QTCREATOR_BIN_DIR}/../PlugIns")
     find_library(UTILS_LIB NAMES Utils PATHS "${QTCREATOR_BIN_DIR}/../Frameworks")
     set(QTWIDGETS_LIB "-framework QtWidgets")
     set(QTGUI_LIB "-framework QtGui")
@@ -140,6 +141,7 @@ elseif (UNIX)
     target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${Qt5X11Extras_INCLUDE_DIRS})
     find_library(CORE_LIB NAMES Core PATHS "${QTCREATOR_BIN_DIR}/../lib/qtcreator/plugins")
     find_library(EXTENSIONSYSTEM_LIB NAMES ExtensionSystem PATHS "${QTCREATOR_BIN_DIR}/../lib/qtcreator")
+    find_library(PROJECTEXPLORER_LIB NAMES ProjectExplorer PATHS "${QTCREATOR_BIN_DIR}/../lib/qtcreator/plugins")
     find_library(UTILS_LIB NAMES Utils PATHS "${QTCREATOR_BIN_DIR}/../lib/qtcreator")
     set(QTWIDGETS_LIB "${QTCREATOR_BIN_DIR}/../lib/Qt/lib/libQt5Widgets.so.5")
     set(QTGUI_LIB "${QTCREATOR_BIN_DIR}/../lib/Qt/lib/libQt5Gui.so.5")
@@ -151,6 +153,7 @@ elseif (UNIX)
 else ()
     find_library(CORE_LIB NAMES Core4 PATHS "${CMAKE_SOURCE_DIR}/lib/qtcreator/plugins")
     find_library(EXTENSIONSYSTEM_LIB NAMES ExtensionSystem4 PATHS "${CMAKE_SOURCE_DIR}/lib/qtcreator")
+    find_library(PROJECTEXPLORER_LIB NAMES ProjectExplorer4 PATHS "${CMAKE_SOURCE_DIR}/lib/qtcreator/plugins")
     find_library(UTILS_LIB NAMES Utils4 PATHS "${CMAKE_SOURCE_DIR}/lib/qtcreator")
     set(QTWIDGETS_LIB "${Qt5Widgets_LIBRARIES}")
     set(QTGUI_LIB "${Qt5Gui_LIBRARIES}")
@@ -171,6 +174,7 @@ endif ()
 target_link_libraries(${PROJECT_NAME} PRIVATE
     "${CORE_LIB}"
     "${EXTENSIONSYSTEM_LIB}"
+    "${PROJECTEXPLORER_LIB}"
     "${UTILS_LIB}"
     "${QTWIDGETS_LIB}"
     "${QTGUI_LIB}"
