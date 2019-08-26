@@ -9,5 +9,11 @@
         <file>resources/chrome-minimize-dark-disabled.svg</file>
         <file>resources/chrome-restore-dark-disabled.svg</file>
         <file>resources/chrome-close-light.svg</file>
+        <file>resources/mode-welcome.svg</file>
+        <file>resources/mode-project.svg</file>
+        <file>resources/mode-edit.svg</file>
+        <file>resources/mode-design.svg</file>
+        <file>resources/mode-debug.svg</file>
+        <file>resources/mode-help.svg</file>
     </qresource>
 </RCC>

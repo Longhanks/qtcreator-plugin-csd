@@ -148,7 +148,7 @@ void TitleBarButton::paintEvent([[maybe_unused]] QPaintEvent *event) {
             this->isEnabled()
                 ? ((this->m_keepDown) ? QIcon::Active : QIcon::Normal)
                 : QIcon::Disabled;
-        QRect iconRect(0, 0, this->width(), this->height());
+        QRect iconRect(0, 0, this->width() - 12, this->height() - 12);
         iconRect.moveCenter(this->rect().center());
         Utils::StyleHelper::drawIconWithShadow(
             this->icon(), iconRect, &stylePainter, iconMode);

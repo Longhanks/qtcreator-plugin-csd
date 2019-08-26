@@ -45,7 +45,7 @@ cmake_policy(SET CMP0071 NEW)
 
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
-project(csd LANGUAGES CXX VERSION 0.1.0)
+project(csd LANGUAGES CXX VERSION 0.2.0)
 
 configure_file("${CMAKE_SOURCE_DIR}/csd.json.in" "${CMAKE_CURRENT_BINARY_DIR}/csd.json")
 
