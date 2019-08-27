@@ -43,7 +43,7 @@ set(CMAKE_CXX_STANDARD 17)
 cmake_policy(SET CMP0020 NEW)
 cmake_policy(SET CMP0071 NEW)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Network Widgets REQUIRED)
 
 project(csd LANGUAGES CXX VERSION 0.2.0)
 
@@ -118,6 +118,7 @@ target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${Qt5Gui_PRIVATE_INCLU
 
 target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
     "${CMAKE_CURRENT_BINARY_DIR}"
+    "${Qt5Network_INCLUDE_DIRS}"
     "${Qt5Widgets_INCLUDE_DIRS}"
     "${QTCREATOR_SRC}/src/libs"
     "${QTCREATOR_SRC}/src/plugins"
@@ -128,6 +129,7 @@ if (APPLE)
     find_library(EXTENSIONSYSTEM_LIB NAMES ExtensionSystem PATHS "${QTCREATOR_BIN_DIR}/../Frameworks")
     find_library(PROJECTEXPLORER_LIB NAMES ProjectExplorer PATHS "${QTCREATOR_BIN_DIR}/../PlugIns")
     find_library(UTILS_LIB NAMES Utils PATHS "${QTCREATOR_BIN_DIR}/../Frameworks")
+    set(QTNETWORK_LIB "-framework QtNetwork")
     set(QTWIDGETS_LIB "-framework QtWidgets")
     set(QTGUI_LIB "-framework QtGui")
     set(QTCORE_LIB "-framework QtCore")
@@ -143,6 +145,7 @@ elseif (UNIX)
     find_library(EXTENSIONSYSTEM_LIB NAMES ExtensionSystem PATHS "${QTCREATOR_BIN_DIR}/../lib/qtcreator")
     find_library(PROJECTEXPLORER_LIB NAMES ProjectExplorer PATHS "${QTCREATOR_BIN_DIR}/../lib/qtcreator/plugins")
     find_library(UTILS_LIB NAMES Utils PATHS "${QTCREATOR_BIN_DIR}/../lib/qtcreator")
+    set(QTNETWORK_LIB "${QTCREATOR_BIN_DIR}/../lib/Qt/lib/libQt5Network.so.5")
     set(QTWIDGETS_LIB "${QTCREATOR_BIN_DIR}/../lib/Qt/lib/libQt5Widgets.so.5")
     set(QTGUI_LIB "${QTCREATOR_BIN_DIR}/../lib/Qt/lib/libQt5Gui.so.5")
     set(QTCORE_LIB "${QTCREATOR_BIN_DIR}/../lib/Qt/lib/libQt5Core.so.5")
@@ -155,6 +158,7 @@ else ()
     find_library(EXTENSIONSYSTEM_LIB NAMES ExtensionSystem4 PATHS "${CMAKE_SOURCE_DIR}/lib/qtcreator")
     find_library(PROJECTEXPLORER_LIB NAMES ProjectExplorer4 PATHS "${CMAKE_SOURCE_DIR}/lib/qtcreator/plugins")
     find_library(UTILS_LIB NAMES Utils4 PATHS "${CMAKE_SOURCE_DIR}/lib/qtcreator")
+    set(QTNETWORK_LIB "${Qt5Network_LIBRARIES}")
     set(QTWIDGETS_LIB "${Qt5Widgets_LIBRARIES}")
     set(QTGUI_LIB "${Qt5Gui_LIBRARIES}")
     set(QTCORE_LIB "${Qt5Core_LIBRARIES}")
@@ -176,6 +180,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     "${EXTENSIONSYSTEM_LIB}"
     "${PROJECTEXPLORER_LIB}"
     "${UTILS_LIB}"
+    "${QTNETWORK_LIB}"
     "${QTWIDGETS_LIB}"
     "${QTGUI_LIB}"
     "${QTCORE_LIB}"

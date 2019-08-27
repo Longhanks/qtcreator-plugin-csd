@@ -41,6 +41,7 @@ private:
     TitleBarButton *m_buttonMinimize;
     TitleBarButton *m_buttonMaximizeRestore;
     TitleBarButton *m_buttonClose;
+    TitleBarButton *m_buttonBuild;
 
 protected:
 #if !defined(_WIN32) && !defined(__APPLE__)

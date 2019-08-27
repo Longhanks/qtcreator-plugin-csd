@@ -2,13 +2,17 @@
 
 #include "csdtitlebarbutton.h"
 
+#include <coreplugin/actionmanager/actionmanager.h>
 #include <coreplugin/coreconstants.h>
 #include <coreplugin/designmode.h>
 #include <coreplugin/modemanager.h>
 #include <debugger/debuggerconstants.h>
 #include <help/helpconstants.h>
+#include <projectexplorer/buildmanager.h>
 #include <projectexplorer/project.h>
+#include <projectexplorer/projectexplorer.h>
 #include <projectexplorer/projectexplorerconstants.h>
+#include <projectexplorer/projectexplorericons.h>
 #include <projectexplorer/session.h>
 #include <utils/icon.h>
 #include <utils/stylehelper.h>
@@ -135,6 +139,51 @@ TitleBar::TitleBar(const QIcon &captionIcon, QWidget *parent)
     emptySpace->setAttribute(Qt::WA_TransparentForMouseEvents);
     this->m_horizontalLayout->addWidget(emptySpace, 1);
 
+    Core::Command *commandBuild = Core::ActionManager::instance()->command(
+        ProjectExplorer::Constants::BUILD);
+    Core::Command *commandCancelBuild =
+        Core::ActionManager::instance()->command(
+            "ProjectExplorer.CancelBuild");
+
+    auto onModeBarBuildActionChanged =
+        [commandBuild, commandCancelBuild, this] {
+            if (ProjectExplorer::BuildManager::isBuilding(
+                    ProjectExplorer::SessionManager::startupProject())) {
+                this->m_buttonBuild->setEnabled(
+                    commandCancelBuild->action()->isEnabled());
+                this->m_buttonBuild->setIcon(
+                    ProjectExplorer::Icons::CANCELBUILD_FLAT.icon());
+                this->m_buttonBuild->disconnect(SIGNAL(clicked()));
+                QObject::connect(this->m_buttonBuild,
+                                 &QPushButton::clicked,
+                                 commandCancelBuild->action(),
+                                 &QAction::trigger);
+            } else {
+                this->m_buttonBuild->setEnabled(
+                    commandBuild->action()->isEnabled());
+                this->m_buttonBuild->setIcon(commandBuild->action()->icon());
+                this->m_buttonBuild->disconnect(SIGNAL(clicked()));
+                QObject::connect(this->m_buttonBuild,
+                                 &QPushButton::clicked,
+                                 commandBuild->action(),
+                                 &QAction::trigger);
+            }
+        };
+
+    this->m_buttonBuild = new TitleBarButton(TitleBarButton::Tool, this);
+    this->m_buttonBuild->setMinimumSize(QSize(30, 30));
+    this->m_buttonBuild->setMaximumSize(QSize(30, 30));
+    this->m_buttonBuild->setIcon(commandBuild->action()->icon());
+    QObject::connect(commandBuild->action(),
+                     &QAction::changed,
+                     this->m_buttonBuild,
+                     onModeBarBuildActionChanged);
+    QObject::connect(commandCancelBuild->action(),
+                     &QAction::changed,
+                     this->m_buttonBuild,
+                     onModeBarBuildActionChanged);
+    this->m_horizontalLayout->addWidget(m_buttonBuild);
+
     this->m_buttonModeWelcome = new TitleBarButton(TitleBarButton::Tool, this);
     this->m_buttonModeWelcome->setObjectName("ButtonModeWelcome");
     this->m_buttonModeWelcome->setMinimumSize(QSize(30, 30));
@@ -213,6 +262,7 @@ TitleBar::TitleBar(const QIcon &captionIcon, QWidget *parent)
     this->m_buttonModeProjects->setObjectName("ButtonModeProjects");
     this->m_buttonModeProjects->setMinimumSize(QSize(30, 30));
     this->m_buttonModeProjects->setMaximumSize(QSize(30, 30));
+    this->m_buttonModeProjects->setEnabled(false);
     this->m_buttonModeProjects->setIcon(Utils::Icon::modeIcon(
         {":/resources/mode-project.svg"},
         {{":/resources/mode-project.svg", Utils::Theme::IconsBaseColor}},
