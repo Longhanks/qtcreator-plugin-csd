@@ -139,11 +139,32 @@ TitleBar::TitleBar(const QIcon &captionIcon, QWidget *parent)
     emptySpace->setAttribute(Qt::WA_TransparentForMouseEvents);
     this->m_horizontalLayout->addWidget(emptySpace, 1);
 
-    Core::Command *commandBuild = Core::ActionManager::instance()->command(
-        ProjectExplorer::Constants::BUILD);
+    Core::Command *commandDebug =
+        Core::ActionManager::command("Debugger.Debug");
+
+    auto onModeBarDebugActionChanged = [commandDebug, this] {
+        this->m_buttonDebug->setEnabled(commandDebug->action()->isEnabled());
+        this->m_buttonDebug->setIcon(commandDebug->action()->icon());
+        this->m_buttonDebug->disconnect(SIGNAL(clicked()));
+        QObject::connect(this->m_buttonDebug,
+                         &QPushButton::clicked,
+                         commandDebug->action(),
+                         &QAction::trigger);
+    };
+
+    this->m_buttonDebug = new TitleBarButton(TitleBarButton::Tool, this);
+    this->m_buttonDebug->setMinimumSize(QSize(30, 30));
+    this->m_buttonDebug->setMaximumSize(QSize(30, 30));
+    QObject::connect(commandDebug->action(),
+                     &QAction::changed,
+                     this->m_buttonDebug,
+                     onModeBarDebugActionChanged);
+    this->m_horizontalLayout->addWidget(m_buttonDebug);
+
+    Core::Command *commandBuild =
+        Core::ActionManager::command(ProjectExplorer::Constants::BUILD);
     Core::Command *commandCancelBuild =
-        Core::ActionManager::instance()->command(
-            "ProjectExplorer.CancelBuild");
+        Core::ActionManager::command("ProjectExplorer.CancelBuild");
 
     auto onModeBarBuildActionChanged =
         [commandBuild, commandCancelBuild, this] {

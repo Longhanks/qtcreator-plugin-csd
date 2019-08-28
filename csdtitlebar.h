@@ -32,6 +32,8 @@ private:
     QMenuBar *m_menuBar;
     QWidget *m_leftMargin;
     TitleBarButton *m_buttonCaptionIcon;
+    TitleBarButton *m_buttonDebug;
+    TitleBarButton *m_buttonBuild;
     TitleBarButton *m_buttonModeWelcome;
     TitleBarButton *m_buttonModeEdit;
     TitleBarButton *m_buttonModeDesign;
@@ -41,7 +43,6 @@ private:
     TitleBarButton *m_buttonMinimize;
     TitleBarButton *m_buttonMaximizeRestore;
     TitleBarButton *m_buttonClose;
-    TitleBarButton *m_buttonBuild;
 
 protected:
 #if !defined(_WIN32) && !defined(__APPLE__)
