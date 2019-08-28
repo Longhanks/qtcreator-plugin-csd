@@ -32,6 +32,7 @@ private:
     QMenuBar *m_menuBar;
     QWidget *m_leftMargin;
     TitleBarButton *m_buttonCaptionIcon;
+    TitleBarButton *m_buttonRun;
     TitleBarButton *m_buttonDebug;
     TitleBarButton *m_buttonBuild;
     TitleBarButton *m_buttonModeWelcome;

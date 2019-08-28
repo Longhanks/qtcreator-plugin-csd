@@ -139,6 +139,28 @@ TitleBar::TitleBar(const QIcon &captionIcon, QWidget *parent)
     emptySpace->setAttribute(Qt::WA_TransparentForMouseEvents);
     this->m_horizontalLayout->addWidget(emptySpace, 1);
 
+    Core::Command *commandRun =
+        Core::ActionManager::command("ProjectExplorer.Run");
+
+    auto onModeBarRunActionChanged = [commandRun, this] {
+        this->m_buttonRun->setEnabled(commandRun->action()->isEnabled());
+        this->m_buttonRun->setIcon(commandRun->action()->icon());
+        this->m_buttonRun->disconnect(SIGNAL(clicked()));
+        QObject::connect(this->m_buttonRun,
+                         &QPushButton::clicked,
+                         commandRun->action(),
+                         &QAction::trigger);
+    };
+
+    this->m_buttonRun = new TitleBarButton(TitleBarButton::Tool, this);
+    this->m_buttonRun->setMinimumSize(QSize(30, 30));
+    this->m_buttonRun->setMaximumSize(QSize(30, 30));
+    QObject::connect(commandRun->action(),
+                     &QAction::changed,
+                     this->m_buttonRun,
+                     onModeBarRunActionChanged);
+    this->m_horizontalLayout->addWidget(m_buttonRun);
+
     Core::Command *commandDebug =
         Core::ActionManager::command("Debugger.Debug");
 
