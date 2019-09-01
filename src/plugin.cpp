@@ -113,10 +113,7 @@ void CSDPlugin::settingsChanged(const Settings &settings) {
     this->m_optionsPage->setSettings(this->m_settings);
     this->m_titleBar->setCaptionButtonStyle(
         this->m_settings.captionButtonStyle);
-    for (TitleBarButton *btn :
-         this->m_titleBar->findChildren<TitleBarButton *>()) {
-        btn->update();
-    }
+    this->m_titleBar->triggerCaptionRepaint();
 }
 
 } // namespace CSD::Internal
