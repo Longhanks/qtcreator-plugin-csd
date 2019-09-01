@@ -49,7 +49,12 @@ project(csd LANGUAGES CXX VERSION 0.2.0)
 
 configure_file("${CMAKE_SOURCE_DIR}/csd.json.in" "${CMAKE_CURRENT_BINARY_DIR}/csd.json")
 
-add_library(${PROJECT_NAME} SHARED csd.qrc csdtitlebar.cpp csdtitlebarbutton.cpp plugin.cpp)
+add_library(${PROJECT_NAME} SHARED
+    "${CMAKE_SOURCE_DIR}/csd.qrc"
+    "${CMAKE_SOURCE_DIR}/src/csdtitlebar.cpp"
+    "${CMAKE_SOURCE_DIR}/src/csdtitlebarbutton.cpp"
+    "${CMAKE_SOURCE_DIR}/src/plugin.cpp"
+)
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang" AND NOT MSVC)
     list(APPEND COMPILER_WARNINGS
@@ -151,7 +156,9 @@ elseif (UNIX)
     set(QTCORE_LIB "${QTCREATOR_BIN_DIR}/../lib/Qt/lib/libQt5Core.so.5")
     set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
 
-    target_sources(${PROJECT_NAME} PRIVATE linuxcsd.cpp)
+    target_sources(${PROJECT_NAME} PRIVATE
+        "${CMAKE_SOURCE_DIR}/src/linuxcsd.cpp"
+    )
     target_link_libraries(${PROJECT_NAME} PRIVATE "${QTCREATOR_BIN_DIR}/../lib/Qt/lib/libQt5X11Extras.so.5")
 else ()
     find_library(CORE_LIB NAMES Core4 PATHS "${CMAKE_SOURCE_DIR}/lib/qtcreator/plugins")
@@ -163,7 +170,10 @@ else ()
     set(QTGUI_LIB "${Qt5Gui_LIBRARIES}")
     set(QTCORE_LIB "${Qt5Core_LIBRARIES}")
 
-    target_sources(${PROJECT_NAME} PRIVATE qtwinbackports.cpp win32csd.cpp)
+    target_sources(${PROJECT_NAME} PRIVATE
+        "${CMAKE_SOURCE_DIR}/src/qtwinbackports.cpp"
+        "${CMAKE_SOURCE_DIR}/src/win32csd.cpp"
+    )
 
     target_compile_definitions(${PROJECT_NAME} PUBLIC WIN32_LEAN_AND_MEAN)
     target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
