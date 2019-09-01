@@ -58,8 +58,10 @@ static QWidget *titleBarTopLevelWidget(QWidget *w) {
 }
 #endif
 
-TitleBar::TitleBar(const QIcon &captionIcon, QWidget *parent)
-    : QWidget(parent) {
+TitleBar::TitleBar(CaptionButtonStyle captionButtonStyle,
+                   const QIcon &captionIcon,
+                   QWidget *parent)
+    : QWidget(parent), m_captionButtonStyle(captionButtonStyle) {
     this->setObjectName("TitleBar");
     this->setMinimumSize(QSize(0, 30));
     this->setMaximumSize(QSize(QWIDGETSIZE_MAX, 30));
@@ -232,9 +234,9 @@ TitleBar::TitleBar(const QIcon &captionIcon, QWidget *parent)
     this->m_buttonModeWelcome->setMinimumSize(QSize(30, 30));
     this->m_buttonModeWelcome->setMaximumSize(QSize(30, 30));
     this->m_buttonModeWelcome->setIcon(Utils::Icon::modeIcon(
-        {":/resources/mode-welcome.svg"},
-        {{":/resources/mode-welcome.svg", Utils::Theme::IconsBaseColor}},
-        {{":/resources/mode-welcome.svg",
+        {":/resources/mode/mode-welcome.svg"},
+        {{":/resources/mode/mode-welcome.svg", Utils::Theme::IconsBaseColor}},
+        {{":/resources/mode/mode-welcome.svg",
           Utils::Theme::IconsModeWelcomeActiveColor}}));
     QObject::connect(this->m_buttonModeWelcome,
                      &QPushButton::clicked,
@@ -250,9 +252,9 @@ TitleBar::TitleBar(const QIcon &captionIcon, QWidget *parent)
     this->m_buttonModeEdit->setMinimumSize(QSize(30, 30));
     this->m_buttonModeEdit->setMaximumSize(QSize(30, 30));
     this->m_buttonModeEdit->setIcon(Utils::Icon::modeIcon(
-        {":/resources/mode-edit.svg"},
-        {{":/resources/mode-edit.svg", Utils::Theme::IconsBaseColor}},
-        {{":/resources/mode-edit.svg",
+        {":/resources/mode/mode-edit.svg"},
+        {{":/resources/mode/mode-edit.svg", Utils::Theme::IconsBaseColor}},
+        {{":/resources/mode/mode-edit.svg",
           Utils::Theme::IconsModeEditActiveColor}}));
     QObject::connect(this->m_buttonModeEdit,
                      &QPushButton::clicked,
@@ -269,9 +271,9 @@ TitleBar::TitleBar(const QIcon &captionIcon, QWidget *parent)
     this->m_buttonModeDesign->setMaximumSize(QSize(30, 30));
     this->m_buttonModeDesign->setEnabled(false);
     this->m_buttonModeDesign->setIcon(Utils::Icon::modeIcon(
-        {":/resources/mode-design.svg"},
-        {{":/resources/mode-design.svg", Utils::Theme::IconsBaseColor}},
-        {{":/resources/mode-design.svg",
+        {":/resources/mode/mode-design.svg"},
+        {{":/resources/mode/mode-design.svg", Utils::Theme::IconsBaseColor}},
+        {{":/resources/mode/mode-design.svg",
           Utils::Theme::IconsModeDesignActiveColor}}));
     QObject::connect(this->m_buttonModeDesign,
                      &QPushButton::clicked,
@@ -287,9 +289,9 @@ TitleBar::TitleBar(const QIcon &captionIcon, QWidget *parent)
     this->m_buttonModeDebug->setMinimumSize(QSize(30, 30));
     this->m_buttonModeDebug->setMaximumSize(QSize(30, 30));
     this->m_buttonModeDebug->setIcon(Utils::Icon::modeIcon(
-        {":/resources/mode-debug.svg"},
-        {{":/resources/mode-debug.svg", Utils::Theme::IconsBaseColor}},
-        {{":/resources/mode-debug.svg",
+        {":/resources/mode/mode-debug.svg"},
+        {{":/resources/mode/mode-debug.svg", Utils::Theme::IconsBaseColor}},
+        {{":/resources/mode/mode-debug.svg",
           Utils::Theme::IconsModeDebugActiveColor}}));
     QObject::connect(this->m_buttonModeDebug,
                      &QPushButton::clicked,
@@ -307,9 +309,9 @@ TitleBar::TitleBar(const QIcon &captionIcon, QWidget *parent)
     this->m_buttonModeProjects->setMaximumSize(QSize(30, 30));
     this->m_buttonModeProjects->setEnabled(false);
     this->m_buttonModeProjects->setIcon(Utils::Icon::modeIcon(
-        {":/resources/mode-project.svg"},
-        {{":/resources/mode-project.svg", Utils::Theme::IconsBaseColor}},
-        {{":/resources/mode-project.svg",
+        {":/resources/mode/mode-project.svg"},
+        {{":/resources/mode/mode-project.svg", Utils::Theme::IconsBaseColor}},
+        {{":/resources/mode/mode-project.svg",
           Utils::Theme::IconsModeProjectActiveColor}}));
     QObject::connect(this->m_buttonModeProjects,
                      &QPushButton::clicked,
@@ -324,12 +326,12 @@ TitleBar::TitleBar(const QIcon &captionIcon, QWidget *parent)
     this->m_buttonModeHelp->setObjectName("ButtonModeHelp");
     this->m_buttonModeHelp->setMinimumSize(QSize(30, 30));
     this->m_buttonModeHelp->setMaximumSize(QSize(30, 30));
-    this->m_buttonModeHelp->setIcon(
-        Utils::Icon::modeIcon({":/resources/mode-help.svg"},
-                              {{QLatin1String(":/resources/mode-help.svg"),
-                                Utils::Theme::IconsBaseColor}},
-                              {{QLatin1String(":/resources/mode-help.svg"),
-                                Utils::Theme::IconsModeHelpActiveColor}}));
+    this->m_buttonModeHelp->setIcon(Utils::Icon::modeIcon(
+        {":/resources/mode/mode-help.svg"},
+        {{QLatin1String(":/resources/mode/mode-help.svg"),
+          Utils::Theme::IconsBaseColor}},
+        {{QLatin1String(":/resources/mode/mode-help.svg"),
+          Utils::Theme::IconsModeHelpActiveColor}}));
     QObject::connect(this->m_buttonModeHelp,
                      &QPushButton::clicked,
                      this->m_buttonModeHelp,
@@ -385,13 +387,31 @@ TitleBar::TitleBar(const QIcon &captionIcon, QWidget *parent)
                          });
     });
 
+    int captionButtonsWidth = 0;
+    switch (this->m_captionButtonStyle) {
+    case CaptionButtonStyle::custom: {
+        captionButtonsWidth = 30;
+        break;
+    }
+    case CaptionButtonStyle::win: {
+        captionButtonsWidth = 46;
+        break;
+    }
+    case CaptionButtonStyle::mac: {
+        captionButtonsWidth = 26;
+        break;
+    }
+    }
+
     this->m_buttonMinimize =
         new TitleBarButton(TitleBarButton::Minimize, this);
     this->m_buttonMinimize->setObjectName("ButtonMinimize");
-    this->m_buttonMinimize->setMinimumSize(QSize(30, 30));
-    this->m_buttonMinimize->setMaximumSize(QSize(30, 30));
+    this->m_buttonMinimize->setMinimumSize(QSize(captionButtonsWidth, 30));
+    this->m_buttonMinimize->setMaximumSize(QSize(captionButtonsWidth, 30));
     this->m_buttonMinimize->setFocusPolicy(Qt::NoFocus);
-    this->m_buttonMinimize->setIconSize(QSize(12, 12));
+    this->m_buttonMinimize->setIconSize(
+        this->m_captionButtonStyle == CaptionButtonStyle::mac ? QSize(16, 16)
+                                                              : QSize(12, 12));
     this->m_horizontalLayout->addWidget(this->m_buttonMinimize);
     connect(this->m_buttonMinimize, &QPushButton::clicked, this, [this]() {
         emit this->minimizeClicked();
@@ -400,10 +420,14 @@ TitleBar::TitleBar(const QIcon &captionIcon, QWidget *parent)
     this->m_buttonMaximizeRestore =
         new TitleBarButton(TitleBarButton::MaximizeRestore, this);
     this->m_buttonMaximizeRestore->setObjectName("ButtonMaximizeRestore");
-    this->m_buttonMaximizeRestore->setMinimumSize(QSize(30, 30));
-    this->m_buttonMaximizeRestore->setMaximumSize(QSize(30, 30));
+    this->m_buttonMaximizeRestore->setMinimumSize(
+        QSize(captionButtonsWidth, 30));
+    this->m_buttonMaximizeRestore->setMaximumSize(
+        QSize(captionButtonsWidth, 30));
     this->m_buttonMaximizeRestore->setFocusPolicy(Qt::NoFocus);
-    this->m_buttonMaximizeRestore->setIconSize(QSize(12, 12));
+    this->m_buttonMaximizeRestore->setIconSize(
+        this->m_captionButtonStyle == CaptionButtonStyle::mac ? QSize(16, 16)
+                                                              : QSize(12, 12));
     this->m_horizontalLayout->addWidget(this->m_buttonMaximizeRestore);
     connect(this->m_buttonMaximizeRestore,
             &QPushButton::clicked,
@@ -412,10 +436,12 @@ TitleBar::TitleBar(const QIcon &captionIcon, QWidget *parent)
 
     this->m_buttonClose = new TitleBarButton(TitleBarButton::Close, this);
     this->m_buttonClose->setObjectName("ButtonClose");
-    this->m_buttonClose->setMinimumSize(QSize(30, 30));
-    this->m_buttonClose->setMaximumSize(QSize(30, 30));
+    this->m_buttonClose->setMinimumSize(QSize(captionButtonsWidth, 30));
+    this->m_buttonClose->setMaximumSize(QSize(captionButtonsWidth, 30));
     this->m_buttonClose->setFocusPolicy(Qt::NoFocus);
-    this->m_buttonClose->setIconSize(QSize(12, 12));
+    this->m_buttonClose->setIconSize(
+        this->m_captionButtonStyle == CaptionButtonStyle::mac ? QSize(16, 16)
+                                                              : QSize(12, 12));
     this->m_horizontalLayout->addWidget(this->m_buttonClose);
     connect(this->m_buttonClose, &QPushButton::clicked, this, [this]() {
         emit this->closeClicked();
@@ -546,35 +572,22 @@ void TitleBar::setActive(bool active) {
         auto palette = this->palette();
         palette.setColor(QPalette::Background, this->m_activeColor);
         this->setPalette(palette);
-
-        this->m_buttonMinimize->setIcon(
-            QIcon(":/resources/chrome-minimize-dark.svg"));
-        if (this->m_maximized) {
-            this->m_buttonMaximizeRestore->setIcon(
-                QIcon(":/resources/chrome-restore-dark.svg"));
-        } else {
-            this->m_buttonMaximizeRestore->setIcon(
-                QIcon(":/resources/chrome-maximize-dark.svg"));
-        }
-        this->m_buttonClose->setIcon(
-            QIcon(":/resources/chrome-close-dark.svg"));
     } else {
         auto palette = this->palette();
         palette.setColor(QPalette::Background, QColor(33, 37, 43));
         this->setPalette(palette);
-
-        this->m_buttonMinimize->setIcon(
-            QIcon(":/resources/chrome-minimize-dark-disabled.svg"));
-        if (this->m_maximized) {
-            this->m_buttonMaximizeRestore->setIcon(
-                QIcon(":/resources/chrome-restore-dark-disabled.svg"));
-        } else {
-            this->m_buttonMaximizeRestore->setIcon(
-                QIcon(":/resources/chrome-maximize-dark-disabled.svg"));
-        }
-        this->m_buttonClose->setIcon(
-            QIcon(":/resources/chrome-close-dark-disabled.svg"));
     }
+
+    auto iconsPaths =
+        Internal::captionIconPathsForState(this->m_active,
+                                           this->m_maximized,
+                                           false,
+                                           false,
+                                           this->m_captionButtonStyle);
+
+    this->m_buttonMinimize->setIcon(QIcon(iconsPaths[0].toString()));
+    this->m_buttonMaximizeRestore->setIcon(QIcon(iconsPaths[1].toString()));
+    this->m_buttonClose->setIcon(QIcon(iconsPaths[2].toString()));
 }
 
 bool TitleBar::isMaximized() const {
@@ -583,31 +596,16 @@ bool TitleBar::isMaximized() const {
 
 void TitleBar::setMaximized(bool maximized) {
     this->m_maximized = maximized;
-    if (this->m_active) {
-        this->m_buttonMinimize->setIcon(
-            QIcon(":/resources/chrome-minimize-dark.svg"));
-        if (this->m_maximized) {
-            this->m_buttonMaximizeRestore->setIcon(
-                QIcon(":/resources/chrome-restore-dark.svg"));
-        } else {
-            this->m_buttonMaximizeRestore->setIcon(
-                QIcon(":/resources/chrome-maximize-dark.svg"));
-        }
-        this->m_buttonClose->setIcon(
-            QIcon(":/resources/chrome-close-dark.svg"));
-    } else {
-        this->m_buttonMinimize->setIcon(
-            QIcon(":/resources/chrome-minimize-dark-disabled.svg"));
-        if (this->m_maximized) {
-            this->m_buttonMaximizeRestore->setIcon(
-                QIcon(":/resources/chrome-restore-dark-disabled.svg"));
-        } else {
-            this->m_buttonMaximizeRestore->setIcon(
-                QIcon(":/resources/chrome-maximize-dark-disabled.svg"));
-        }
-        this->m_buttonClose->setIcon(
-            QIcon(":/resources/chrome-close-dark-disabled.svg"));
-    }
+    auto iconsPaths =
+        Internal::captionIconPathsForState(this->m_active,
+                                           this->m_maximized,
+                                           false,
+                                           false,
+                                           this->m_captionButtonStyle);
+
+    this->m_buttonMinimize->setIcon(QIcon(iconsPaths[0].toString()));
+    this->m_buttonMaximizeRestore->setIcon(QIcon(iconsPaths[1].toString()));
+    this->m_buttonClose->setIcon(QIcon(iconsPaths[2].toString()));
 }
 
 void TitleBar::setMinimizable(bool on) {
@@ -637,6 +635,53 @@ void TitleBar::setHoverColor(QColor hoverColor) {
     this->m_buttonMaximizeRestore->setHoverColor(this->m_hoverColor);
 }
 
+CaptionButtonStyle TitleBar::captionButtonStyle() const {
+    return this->m_captionButtonStyle;
+}
+
+void TitleBar::setCaptionButtonStyle(CaptionButtonStyle captionButtonStyle) {
+    this->m_captionButtonStyle = captionButtonStyle;
+
+    auto iconSize = this->m_captionButtonStyle == CaptionButtonStyle::mac
+                        ? QSize(16, 16)
+                        : QSize(12, 12);
+    int requiredWidth = 0;
+    switch (this->m_captionButtonStyle) {
+    case CaptionButtonStyle::custom: {
+        requiredWidth = 30;
+        break;
+    }
+    case CaptionButtonStyle::win: {
+        requiredWidth = 46;
+        break;
+    }
+    case CaptionButtonStyle::mac: {
+        requiredWidth = 26;
+        break;
+    }
+    }
+    this->m_buttonMinimize->setIconSize(iconSize);
+    this->m_buttonMinimize->setMinimumWidth(requiredWidth);
+    this->m_buttonMinimize->setMaximumWidth(requiredWidth);
+    this->m_buttonMaximizeRestore->setIconSize(iconSize);
+    this->m_buttonMaximizeRestore->setMinimumWidth(requiredWidth);
+    this->m_buttonMaximizeRestore->setMaximumWidth(requiredWidth);
+    this->m_buttonClose->setIconSize(iconSize);
+    this->m_buttonClose->setMinimumWidth(requiredWidth);
+    this->m_buttonClose->setMaximumWidth(requiredWidth);
+
+    auto iconsPaths =
+        Internal::captionIconPathsForState(this->m_active,
+                                           this->m_maximized,
+                                           false,
+                                           false,
+                                           this->m_captionButtonStyle);
+
+    this->m_buttonMinimize->setIcon(QIcon(iconsPaths[0].toString()));
+    this->m_buttonMaximizeRestore->setIcon(QIcon(iconsPaths[1].toString()));
+    this->m_buttonClose->setIcon(QIcon(iconsPaths[2].toString()));
+}
+
 void TitleBar::onWindowStateChange(Qt::WindowStates state) {
     this->setActive(this->window()->isActiveWindow());
     this->setMaximized(static_cast<bool>(state & Qt::WindowMaximized));
@@ -663,6 +708,18 @@ bool TitleBar::hovered() const {
     return true;
 }
 
+bool TitleBar::isCaptionButtonHovered() const {
+    return this->m_buttonMinimize->underMouse() ||
+           this->m_buttonMaximizeRestore->underMouse() ||
+           this->m_buttonClose->underMouse();
+}
+
+void TitleBar::triggerCaptionRepaint() {
+    this->m_buttonMinimize->update();
+    this->m_buttonMaximizeRestore->update();
+    this->m_buttonClose->update();
+}
+
 void TitleBar::resetModeButtonStates() {
     this->m_buttonModeWelcome->setKeepDown(false);
     this->m_buttonModeEdit->setKeepDown(false);
@@ -671,5 +728,116 @@ void TitleBar::resetModeButtonStates() {
     this->m_buttonModeProjects->setKeepDown(false);
     this->m_buttonModeHelp->setKeepDown(false);
 }
+
+namespace Internal {
+
+std::array<QStringView, 3> captionIconPathsForState(bool active,
+                                                    bool maximized,
+                                                    bool hovered,
+                                                    bool pressed,
+                                                    CaptionButtonStyle style) {
+    std::array<QStringView, 3> buf;
+
+    switch (style) {
+    case CaptionButtonStyle::custom: {
+        if (active || hovered) {
+            buf[0] = u":/resources/titlebar/custom/chrome-minimize-dark.svg";
+            if (maximized) {
+                buf[1] =
+                    u":/resources/titlebar/custom/chrome-restore-dark.svg";
+            } else {
+                buf[1] =
+                    u":/resources/titlebar/custom/chrome-maximize-dark.svg";
+            }
+            if (hovered) {
+                buf[2] = u":/resources/titlebar/custom/chrome-close-light.svg";
+            } else {
+                buf[2] = u":/resources/titlebar/custom/chrome-close-dark.svg";
+            }
+        } else {
+            buf[0] = u":/resources/titlebar/custom/"
+                     u"chrome-minimize-dark-disabled.svg";
+            if (maximized) {
+                buf[1] = u":/resources/titlebar/custom/"
+                         u"chrome-restore-dark-disabled.svg";
+            } else {
+                buf[1] = u":/resources/titlebar/custom/"
+                         u"chrome-maximize-dark-disabled.svg";
+            }
+            buf[2] =
+                u":/resources/titlebar/custom/chrome-close-dark-disabled.svg";
+        }
+        break;
+    }
+    case CaptionButtonStyle::win: {
+        if (active || hovered) {
+            buf[0] = u":/resources/titlebar/win/chrome-minimize-dark.svg";
+            if (maximized) {
+                buf[1] = u":/resources/titlebar/win/chrome-restore-dark.svg";
+            } else {
+                buf[1] = u":/resources/titlebar/win/chrome-maximize-dark.svg";
+            }
+            if (hovered) {
+                buf[2] = u":/resources/titlebar/win/chrome-close-light.svg";
+            } else {
+                buf[2] = u":/resources/titlebar/win/chrome-close-dark.svg";
+            }
+        } else {
+            buf[0] =
+                u":/resources/titlebar/win/chrome-minimize-dark-disabled.svg";
+            if (maximized) {
+                buf[1] = u":/resources/titlebar/win/"
+                         u"chrome-restore-dark-disabled.svg";
+            } else {
+                buf[1] = u":/resources/titlebar/win/"
+                         u"chrome-maximize-dark-disabled.svg";
+            }
+            buf[2] =
+                u":/resources/titlebar/win/chrome-close-dark-disabled.svg";
+        }
+        break;
+    }
+    case CaptionButtonStyle::mac: {
+        if (pressed) {
+            buf[0] = u":/resources/titlebar/mac/minimize-pressed.png";
+            if (maximized) {
+                buf[1] = u":/resources/titlebar/mac/"
+                         "maximize-restore-maximized-pressed.png";
+            } else {
+                buf[1] = u":/resources/titlebar/mac/"
+                         u"maximize-restore-normal-pressed.png";
+            }
+            buf[2] = u":/resources/titlebar/mac/close-pressed.png";
+        } else {
+            if (hovered) {
+                buf[0] = u":/resources/titlebar/mac/minimize-hovered.png";
+                if (maximized) {
+                    buf[1] = u":/resources/titlebar/mac/"
+                             u"maximize-restore-maximized-hovered.png";
+                } else {
+                    buf[1] = u":/resources/titlebar/mac/"
+                             u"maximize-restore-normal-hovered.png";
+                }
+                buf[2] = u":/resources/titlebar/mac/close-hovered.png";
+            } else {
+                if (active) {
+                    buf[0] = u":/resources/titlebar/mac/minimize.png";
+                    buf[1] = u":/resources/titlebar/mac/maximize-restore.png";
+                    buf[2] = u":/resources/titlebar/mac/close.png";
+                } else {
+                    buf[0] = u":/resources/titlebar/mac/inactive.png";
+                    buf[1] = u":/resources/titlebar/mac/inactive.png";
+                    buf[2] = u":/resources/titlebar/mac/inactive.png";
+                }
+            }
+        }
+        break;
+    }
+    }
+
+    return buf;
+}
+
+} // namespace Internal
 
 } // namespace CSD

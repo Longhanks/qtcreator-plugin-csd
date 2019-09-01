@@ -34,6 +34,8 @@ public:
 protected:
     bool event(QEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
+    void enterEvent(QEvent *event) override;
+    void leaveEvent(QEvent *event) override;
 
 private:
     Role m_role;

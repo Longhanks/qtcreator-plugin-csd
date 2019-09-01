@@ -1,9 +1,13 @@
 #pragma once
 
+#include "captionbuttonstyle.h"
+
 #include <QColor>
 #include <QIcon>
+#include <QStringView>
 #include <QWidget>
 
+#include <array>
 #include <optional>
 
 class QHBoxLayout;
@@ -31,6 +35,7 @@ private:
     QHBoxLayout *m_horizontalLayout;
     QMenuBar *m_menuBar;
     QWidget *m_leftMargin;
+    CaptionButtonStyle m_captionButtonStyle;
     TitleBarButton *m_buttonCaptionIcon;
     TitleBarButton *m_buttonRun;
     TitleBarButton *m_buttonDebug;
@@ -52,7 +57,8 @@ protected:
     void paintEvent(QPaintEvent *event) override;
 
 public:
-    explicit TitleBar(const QIcon &captionIcon = QIcon(),
+    explicit TitleBar(CaptionButtonStyle captionButtonStyle,
+                      const QIcon &captionIcon = QIcon(),
                       QWidget *parent = nullptr);
     ~TitleBar() override;
 
@@ -66,8 +72,13 @@ public:
     void setActiveColor(const QColor &activeColor);
     QColor hoverColor() const;
     void setHoverColor(QColor hoverColor);
+    CaptionButtonStyle captionButtonStyle() const;
+    void setCaptionButtonStyle(CaptionButtonStyle captionButtonStyle);
     void onWindowStateChange(Qt::WindowStates state);
     bool hovered() const;
+
+    bool isCaptionButtonHovered() const;
+    void triggerCaptionRepaint();
 
 signals:
     void minimizeClicked();
@@ -77,5 +88,15 @@ signals:
 private:
     void resetModeButtonStates();
 };
+
+namespace Internal {
+
+std::array<QStringView, 3> captionIconPathsForState(bool active,
+                                                    bool maximized,
+                                                    bool hovered,
+                                                    bool pressed,
+                                                    CaptionButtonStyle style);
+
+}
 
 } // namespace CSD

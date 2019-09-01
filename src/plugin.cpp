@@ -2,6 +2,7 @@
 
 #include "csdtitlebar.h"
 #include "csdtitlebarbutton.h"
+#include "optionspage.h"
 
 #include <coreplugin/coreicons.h>
 #include <coreplugin/icore.h>
@@ -37,11 +38,14 @@ CSDPlugin::~CSDPlugin() {
 
 bool CSDPlugin::initialize([[maybe_unused]] const QStringList &arguments,
                            [[maybe_unused]] QString *errorString) {
+    this->m_settings.load(Core::ICore::settings());
+
     QMainWindow *mainWindow = Core::ICore::mainWindow();
     auto wrapperLayout =
         static_cast<QVBoxLayout *>(mainWindow->centralWidget()->layout());
 
-    this->m_titleBar = new TitleBar(Core::Icons::QTCREATORLOGO_BIG.icon(),
+    this->m_titleBar = new TitleBar(this->m_settings.captionButtonStyle,
+                                    Core::Icons::QTCREATORLOGO_BIG.icon(),
                                     mainWindow->centralWidget());
     this->m_titleBar->setHoverColor(
         Utils::creatorTheme()->color(Utils::Theme::FancyToolButtonHoverColor));
@@ -79,6 +83,18 @@ bool CSDPlugin::initialize([[maybe_unused]] const QStringList &arguments,
                 this->m_titleBar->window()->windowState());
         });
 
+    this->m_optionsPage = new OptionsPage(this->m_settings, this);
+
+    connect(m_optionsPage,
+            &OptionsPage::settingsChanged,
+            this,
+            &CSDPlugin::settingsChanged);
+
+    connect(Core::ICore::instance(),
+            &Core::ICore::saveSettingsRequested,
+            this,
+            [this] { this->m_settings.save(Core::ICore::settings()); });
+
     return true;
 }
 
@@ -90,5 +106,17 @@ CSDPlugin::ShutdownFlag CSDPlugin::aboutToShutdown() {
 }
 
 void CSDPlugin::extensionsInitialized() {}
+
+void CSDPlugin::settingsChanged(const Settings &settings) {
+    settings.save(Core::ICore::settings());
+    this->m_settings = settings;
+    this->m_optionsPage->setSettings(this->m_settings);
+    this->m_titleBar->setCaptionButtonStyle(
+        this->m_settings.captionButtonStyle);
+    for (TitleBarButton *btn :
+         this->m_titleBar->findChildren<TitleBarButton *>()) {
+        btn->update();
+    }
+}
 
 } // namespace CSD::Internal

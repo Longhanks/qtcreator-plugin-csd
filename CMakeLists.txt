@@ -53,7 +53,10 @@ add_library(${PROJECT_NAME} SHARED
     "${CMAKE_SOURCE_DIR}/csd.qrc"
     "${CMAKE_SOURCE_DIR}/src/csdtitlebar.cpp"
     "${CMAKE_SOURCE_DIR}/src/csdtitlebarbutton.cpp"
+    "${CMAKE_SOURCE_DIR}/src/optionsdialog.cpp"
+    "${CMAKE_SOURCE_DIR}/src/optionspage.cpp"
     "${CMAKE_SOURCE_DIR}/src/plugin.cpp"
+    "${CMAKE_SOURCE_DIR}/src/settings.cpp"
 )
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang" AND NOT MSVC)

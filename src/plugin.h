@@ -1,5 +1,7 @@
 #pragma once
 
+#include "settings.h"
+
 #include <extensionsystem/iplugin.h>
 
 #include <QStringList>
@@ -17,6 +19,8 @@ class TitleBar;
 class TitleBarButton;
 
 namespace Internal {
+
+class OptionsPage;
 
 class CSDPlugin : public ExtensionSystem::IPlugin {
     Q_OBJECT
@@ -40,6 +44,11 @@ private:
 #ifndef __APPLE__
     TitleBar *m_titleBar;
 #endif
+
+    OptionsPage *m_optionsPage = nullptr;
+    Settings m_settings;
+
+    void settingsChanged(const Settings &settings);
 };
 
 } // namespace Internal

@@ -80,6 +80,8 @@ bool TitleBarButton::event(QEvent *event) {
 }
 
 void TitleBarButton::paintEvent([[maybe_unused]] QPaintEvent *event) {
+    auto *titleBar = static_cast<TitleBar *>(this->parent());
+
     auto stylePainter = QStylePainter(this);
     auto styleOptionButton = QStyleOptionButton();
     styleOptionButton.initFrom(this);
@@ -89,18 +91,41 @@ void TitleBarButton::paintEvent([[maybe_unused]] QPaintEvent *event) {
         this->m_role == Role::Tool ? QIcon() : this->icon();
     styleOptionButton.iconSize = this->iconSize();
 
-    const auto hoverColor = [this]() -> QColor {
+    const auto hoverColor = [titleBar, this]() -> QColor {
         auto col = this->m_role == Role::Close ? QColor(232, 17, 35, 229)
                                                : this->m_hoverColor;
         if (!this->m_keepDown) {
             col.setAlpha(static_cast<int>(this->m_fader * col.alpha()));
         }
-        if (!this->isEnabled() || this->m_role == Role::CaptionIcon) {
+
+        bool isMacCaptionStyle =
+            titleBar->captionButtonStyle() == CaptionButtonStyle::mac;
+        bool isMacCaptionButton =
+            (isMacCaptionStyle && this->m_role == Role::Minimize) ||
+            (isMacCaptionStyle && this->m_role == Role::MaximizeRestore) ||
+            (isMacCaptionStyle && this->m_role == Role::Close);
+
+        if (!this->isEnabled() || this->m_role == Role::CaptionIcon ||
+            isMacCaptionButton) {
             col.setAlpha(0);
         }
+
         return col;
     }();
-    const bool isHovered = styleOptionButton.state & QStyle::State_MouseOver;
+
+    // On mac style, all caption buttons get the 'hovered' style if any of them
+    // is hovered - this mimics real macOS
+    const bool isHovered =
+        (styleOptionButton.state & QStyle::State_MouseOver) ||
+        (titleBar->captionButtonStyle() == CaptionButtonStyle::mac &&
+         titleBar->isCaptionButtonHovered());
+
+    const auto iconPaths =
+        Internal::captionIconPathsForState(titleBar->isActive(),
+                                           titleBar->isMaximized(),
+                                           isHovered,
+                                           this->isDown(),
+                                           titleBar->captionButtonStyle());
 
     switch (this->m_role) {
     case Role::CaptionIcon: {
@@ -108,27 +133,19 @@ void TitleBarButton::paintEvent([[maybe_unused]] QPaintEvent *event) {
     }
     case Role::Minimize: {
         if (isHovered) {
-            styleOptionButton.icon =
-                QIcon(":/resources/chrome-minimize-dark.svg");
+            styleOptionButton.icon = QIcon(iconPaths[0].toString());
         }
         break;
     }
     case Role::MaximizeRestore: {
         if (isHovered) {
-            if (this->window()->windowState() & Qt::WindowMaximized) {
-                styleOptionButton.icon =
-                    QIcon(":/resources/chrome-restore-dark.svg");
-            } else {
-                styleOptionButton.icon =
-                    QIcon(":/resources/chrome-maximize-dark.svg");
-            }
+            styleOptionButton.icon = QIcon(iconPaths[1].toString());
         }
         break;
     }
     case Role::Close: {
         if (isHovered) {
-            styleOptionButton.icon =
-                QIcon(":/resources/chrome-close-light.svg");
+            styleOptionButton.icon = QIcon(iconPaths[2].toString());
         }
         break;
     }
@@ -162,6 +179,16 @@ void TitleBarButton::paintEvent([[maybe_unused]] QPaintEvent *event) {
                 Utils::creatorTheme()->color(Utils::Theme::IconsBaseColor));
         }
     }
+}
+
+void TitleBarButton::enterEvent(QEvent *event) {
+    QPushButton::enterEvent(event);
+    static_cast<TitleBar *>(this->parent())->triggerCaptionRepaint();
+}
+
+void TitleBarButton::leaveEvent(QEvent *event) {
+    QPushButton::leaveEvent(event);
+    static_cast<TitleBar *>(this->parent())->triggerCaptionRepaint();
 }
 
 } // namespace CSD
