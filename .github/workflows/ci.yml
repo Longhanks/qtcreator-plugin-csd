@@ -66,3 +66,57 @@ jobs:
         cd build
         ninja install
 
+  build-windows:
+    runs-on: windows-2019
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install cmake
+      run: |
+        powershell.exe -Command "(New-Object System.Net.WebClient).DownloadFile(\"https://github.com/Kitware/CMake/releases/download/v3.15.2/cmake-3.15.2-win64-x64.msi\", \"cmake.msi\")"
+        msiexec /quiet /a cmake.msi /qn TARGETDIR="%CD%\cmake-3.15.2"
+        del cmake.msi
+    - name: Install ninja
+      run: |
+        powershell.exe -Command "(New-Object System.Net.WebClient).DownloadFile(\"https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-win.zip\", \"ninja-win.zip\")"
+        powershell.exe -Command "Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::ExtractToDirectory(\"%CD%\ninja-win.zip\", \"%CD%\")"
+        del ninja-win.zip
+    - name: Install Qt
+      run: |
+        powershell.exe -Command "(New-Object System.Net.WebClient).DownloadFile(\"https://download.qt.io/archive/qt/5.12/5.12.4/qt-opensource-windows-x86-5.12.4.exe\", \"qt.exe\")"
+        powershell.exe -Command "Copy-Item \"buildutils/install-qt.qs.in\" -Destination \"install-qt.qs\""
+        powershell.exe -Command "(Get-Content install-qt.qs).replace('$PACKAGES', 'qt.qt5.5124.win64_msvc2017_64') | Set-Content install-qt.qs"
+        powershell.exe -Command "(Get-Content install-qt.qs).replace('$LIST_PACKAGES', 'false') | Set-Content install-qt.qs"
+        powershell.exe -Command "(Get-Content install-qt.qs).replace('$OUTPUT', [regex]::escape('%CD%\qt-5.12.4')) | Set-Content install-qt.qs"
+        qt.exe --script install-qt.qs
+        del qt.exe
+        del install-qt.qs
+    - name: Install Qt Creator
+      run: |
+        powershell.exe -Command "(New-Object System.Net.WebClient).DownloadFile(\"http://download.qt.io/official_releases/qtcreator/4.9/4.9.2/qt-creator-opensource-windows-x86_64-4.9.2.exe\", \"qtcreator.exe\")"
+        powershell.exe -Command "Copy-Item \"buildutils/install-qt.qs.in\" -Destination \"install-qtcreator.qs\""
+        powershell.exe -Command "(Get-Content install-qtcreator.qs).replace('$PACKAGES', '') | Set-Content install-qtcreator.qs"
+        powershell.exe -Command "(Get-Content install-qtcreator.qs).replace('$LIST_PACKAGES', 'false') | Set-Content install-qtcreator.qs"
+        powershell.exe -Command "(Get-Content install-qtcreator.qs).replace('$OUTPUT', [regex]::escape('%CD%\qtcreator-4.9.2')) | Set-Content install-qtcreator.qs"
+        qtcreator.exe --script install-qtcreator.qs
+        del qtcreator.exe
+        del install-qtcreator.qs
+    - name: Download Qt Creator source
+      run: |
+        powershell.exe -Command "(New-Object System.Net.WebClient).DownloadFile(\"http://download.qt.io/official_releases/qtcreator/4.9/4.9.2/qt-creator-opensource-src-4.9.2.zip\", \"qt-creator-opensource-src-4.9.2.zip\")"
+        powershell.exe -Command "Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::ExtractToDirectory(\"%CD%\qt-creator-opensource-src-4.9.2.zip\", \"%CD%\")"
+        del qt-creator-opensource-src-4.9.2.zip
+    - name: Configure
+      run: |
+        mkdir build
+        cd build
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        ..\cmake-3.15.2\CMake\bin\cmake.exe .. -GNinja -DCMAKE_CXX_COMPILER=cl.exe -DCMAKE_BUILD_TYPE=Release -DQTCREATOR_SRC="../qt-creator-opensource-src-4.9.2" -DQTCREATOR_BIN="../qtcreator-4.9.2/bin/qtcreator.exe" -DCMAKE_PREFIX_PATH="%CD%\\..\\qt-5.12.4\\5.12.4\\msvc2017_64"
+    - name: Build
+      run: |
+        cd build
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        ..\ninja.exe
+    - name: Deploy
+      run: |
+        cd build
+        ..\ninja.exe install
