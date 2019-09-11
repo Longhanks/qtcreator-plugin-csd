@@ -40,6 +40,7 @@
 #include <QX11Info>
 
 #include <private/qhighdpiscaling_p.h>
+#include <qpa/qplatformscreen.h>
 #include <qpa/qplatformwindow.h>
 
 #include <cstring>
@@ -503,7 +504,7 @@ void TitleBar::mousePressEvent(QMouseEvent *event) {
         QPlatformWindow *platformWindow = tlw->windowHandle()->handle();
         const QPoint globalPos = QHighDpi::toNativePixels(
             platformWindow->mapToGlobal(this->mapTo(tlw, event->pos())),
-            platformWindow->screen());
+            platformWindow->screen()->screen());
 
         const xcb_atom_t moveResizeAtom = []() -> xcb_atom_t {
             xcb_intern_atom_cookie_t cookie = xcb_intern_atom(
@@ -570,11 +571,11 @@ void TitleBar::setActive(bool active) {
     this->m_active = active;
     if (active) {
         auto palette = this->palette();
-        palette.setColor(QPalette::Background, this->m_activeColor);
+        palette.setColor(QPalette::Window, this->m_activeColor);
         this->setPalette(palette);
     } else {
         auto palette = this->palette();
-        palette.setColor(QPalette::Background, QColor(33, 37, 43));
+        palette.setColor(QPalette::Window, QColor(33, 37, 43));
         this->setPalette(palette);
     }
 
