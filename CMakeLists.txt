@@ -169,7 +169,11 @@ elseif (UNIX)
     target_sources(${PROJECT_NAME} PRIVATE
         "${CMAKE_SOURCE_DIR}/src/linuxcsd.cpp"
     )
-    target_link_libraries(${PROJECT_NAME} PRIVATE "${QTCREATOR_BIN_DIR}/../lib/Qt/lib/libQt5X11Extras.so.5")
+    if (EXISTS "${QTCREATOR_BIN_DIR}/../lib/libQt5Core.so.5")
+    target_link_libraries(${PROJECT_NAME} PRIVATE "${QTCREATOR_BIN_DIR}/../lib/libQt5X11Extras.so.5")
+    else ()
+        target_link_libraries(${PROJECT_NAME} PRIVATE "${QTCREATOR_BIN_DIR}/../lib/Qt/lib/libQt5X11Extras.so.5")
+    endif ()
 else ()
     find_library(CORE_LIB NAMES Core4 PATHS "${CMAKE_SOURCE_DIR}/lib/qtcreator/plugins")
     find_library(EXTENSIONSYSTEM_LIB NAMES ExtensionSystem4 PATHS "${CMAKE_SOURCE_DIR}/lib/qtcreator")
