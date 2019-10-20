@@ -19,7 +19,7 @@ inline void init_resource() {
 
 namespace CSD::Internal {
 
-CSDPlugin::CSDPlugin() {
+CSDPlugin::CSDPlugin() noexcept {
     init_resource();
 #ifdef _WIN32
     this->m_filter = new Win32ClientSideDecorationFilter(this);
@@ -28,12 +28,6 @@ CSDPlugin::CSDPlugin() {
 #else
     this->m_filter = new LinuxClientSideDecorationFilter(this);
 #endif
-}
-
-CSDPlugin::~CSDPlugin() {
-    delete this->m_filter;
-    this->m_filter = nullptr;
-    this->m_titleBar = nullptr;
 }
 
 bool CSDPlugin::initialize([[maybe_unused]] const QStringList &arguments,
@@ -52,22 +46,22 @@ bool CSDPlugin::initialize([[maybe_unused]] const QStringList &arguments,
     this->m_titleBar->setActiveColor(QColor(40, 44, 52));
     wrapperLayout->insertWidget(0, this->m_titleBar);
 
-    connect(
+    QObject::connect(
         this->m_titleBar, &TitleBar::minimizeClicked, this, [mainWindow]() {
             mainWindow->setWindowState(mainWindow->windowState() |
                                        Qt::WindowMinimized);
         });
-    connect(this->m_titleBar,
-            &TitleBar::maximizeRestoreClicked,
-            this,
-            [mainWindow]() {
-                mainWindow->setWindowState(mainWindow->windowState() ^
-                                           Qt::WindowMaximized);
-            });
-    connect(this->m_titleBar,
-            &TitleBar::closeClicked,
-            mainWindow,
-            &QWidget::close);
+    QObject::connect(this->m_titleBar,
+                     &TitleBar::maximizeRestoreClicked,
+                     this,
+                     [mainWindow]() {
+                         mainWindow->setWindowState(mainWindow->windowState() ^
+                                                    Qt::WindowMaximized);
+                     });
+    QObject::connect(this->m_titleBar,
+                     &TitleBar::closeClicked,
+                     mainWindow,
+                     &QWidget::close);
 
     this->m_filter->apply(
         mainWindow,
@@ -85,15 +79,16 @@ bool CSDPlugin::initialize([[maybe_unused]] const QStringList &arguments,
 
     this->m_optionsPage = new OptionsPage(this->m_settings, this);
 
-    connect(m_optionsPage,
-            &OptionsPage::settingsChanged,
-            this,
-            &CSDPlugin::settingsChanged);
+    QObject::connect(m_optionsPage,
+                     &OptionsPage::settingsChanged,
+                     this,
+                     &CSDPlugin::settingsChanged);
 
-    connect(Core::ICore::instance(),
-            &Core::ICore::saveSettingsRequested,
-            this,
-            [this] { this->m_settings.save(Core::ICore::settings()); });
+    QObject::connect(
+        Core::ICore::instance(),
+        &Core::ICore::saveSettingsRequested,
+        this,
+        [this] { this->m_settings.save(Core::ICore::settings()); });
 
     return true;
 }

@@ -22,13 +22,13 @@ namespace Internal {
 
 class OptionsPage;
 
-class CSDPlugin : public ExtensionSystem::IPlugin {
+class CSDPlugin final : public ExtensionSystem::IPlugin {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QtCreatorPlugin" FILE "csd.json")
 
 public:
-    CSDPlugin();
-    ~CSDPlugin() override;
+    CSDPlugin() noexcept;
+    ~CSDPlugin() noexcept override = default;
     bool initialize(const QStringList &arguments,
                     QString *errorString) override;
     void extensionsInitialized() override;
@@ -36,13 +36,13 @@ public:
 
 private:
 #ifdef _WIN32
-    Win32ClientSideDecorationFilter *m_filter;
+    Win32ClientSideDecorationFilter *m_filter = nullptr;
 #elif defined(__APPLE__)
 #else
-    LinuxClientSideDecorationFilter *m_filter;
+    LinuxClientSideDecorationFilter *m_filter = nullptr;
 #endif
 #ifndef __APPLE__
-    TitleBar *m_titleBar;
+    TitleBar *m_titleBar = nullptr;
 #endif
 
     OptionsPage *m_optionsPage = nullptr;
